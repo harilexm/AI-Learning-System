@@ -16,7 +16,7 @@ const handleLogout = () => {
   <div id="app-container">
     <header class="app-header">
       <nav class="main-nav">
-        <!-- These links are always visible -->
+        
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
         
