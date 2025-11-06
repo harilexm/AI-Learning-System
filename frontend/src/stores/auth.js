@@ -19,6 +19,8 @@ export const useAuthStore = defineStore('auth', () => {
   // State
   const token = ref(localStorage.getItem('token') || null);
   const user = ref(JSON.parse(localStorage.getItem('user')) || null);
+  const tempGeneratedQuiz = ref(null);
+
 
   // Getters
   const isAuthenticated = computed(() => !!token.value);
@@ -70,5 +72,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user');
   }
 
-  return { token, user, isAuthenticated, userRoles, isAdmin, isTeacher, isStudent, login, fetchProfile, logout };
+  return { token, user, tempGeneratedQuiz, isAuthenticated, userRoles, isAdmin, isTeacher, isStudent, login, fetchProfile, logout };
 });

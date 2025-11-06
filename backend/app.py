@@ -780,6 +780,93 @@ def generate_quiz_from_article():
         print(f"An error occurred with the OpenAI API: {e}")
         return jsonify({"error": f"An error occurred while generating the quiz: {e}"}), 500
 
+# --- NEW AI ADAPTIVE ASSESSMENT API ---
+
+@app.route('/api/ai/generate-assessment', methods=['POST'])
+@roles_required('student')
+def generate_adaptive_assessment():
+    """
+    Analyzes a student's weaknesses based on past quiz scores and generates a new,
+    tailored assessment using OpenAI's GPT.
+    """
+    if not openai.api_key:
+        return jsonify({"error": "AI service is not configured on the server."}), 503
+
+    student = Student.query.filter_by(user_id=get_jwt_identity()).first()
+    if not student:
+        return jsonify({"error": "Student profile not found."}), 404
+
+    # Phase 1: Find Student Weaknesses
+    all_attempts = student.quiz_attempts
+    if not all_attempts:
+        return jsonify({"message": "You haven't completed any quizzes yet. Take a quiz to get a personalized assessment!"})
+
+    scores_by_tag = {}
+    for attempt in all_attempts:
+        if attempt.quiz.tags:
+            tags = [tag.strip().lower() for tag in attempt.quiz.tags.split(',')]
+            for tag in tags:
+                if tag not in scores_by_tag:
+                    scores_by_tag[tag] = []
+                scores_by_tag[tag].append(float(attempt.score))
+
+    if not scores_by_tag:
+        return jsonify({"message": "You haven't completed any tagged quizzes yet. Complete more content to get a personalized assessment!"})
+        
+    average_scores = {tag: sum(scores) / len(scores) for tag, scores in scores_by_tag.items()}
+    
+    # Identify weaknesses (tags with average score below 75%)
+    weakness_tags = [tag for tag, avg in average_scores.items() if avg < 75.0]
+
+    if not weakness_tags:
+        return jsonify({"message": "Great job! We couldn't find any weak areas in your recent quizzes. Keep up the good work!"})
+
+    # Phase 2: Generate AI Assessment
+    # Find relevant articles based on weakness tags
+    # The 'ilike' query helps find a tag within a comma-separated string
+    relevant_articles = LearningContent.query.filter(
+        LearningContent.type == 'article',
+        LearningContent.tags.ilike(f"%{weakness_tags[0]}%") # Start with the weakest tag
+    ).limit(5).all()
+
+    if not relevant_articles:
+        return jsonify({"message": "We've identified some weak areas, but couldn't find relevant articles to generate a quiz. More content coming soon!"})
+
+    context_text = "\n\n".join([article.content_body for article in relevant_articles])
+    
+    system_prompt = (
+        "You are a helpful tutor creating a personalized practice assessment. The student is struggling "
+        "with the following topics: {topics}. Based on the provided article texts, generate a JSON "
+        "object for a 5-question assessment that specifically targets these topics. For each "
+        "question, provide a unique 'id', the question 'text', an array of three string 'options', "
+        "and the 'correct_answer_index' (0, 1, or 2)."
+    ).format(topics=', '.join(weakness_tags))
+
+    user_prompt = f"Here are the relevant articles:\n\n{context_text}"
+
+    try:
+        completion = openai.chat.completions.create(
+            model="gpt-3.5-turbo-1106",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.6
+        )
+        quiz_data = json.loads(completion.choices[0].message.content)
+
+        if 'questions' not in quiz_data or len(quiz_data['questions']) == 0:
+            raise ValueError("AI did not generate any questions.")
+
+        # Add a title to the generated quiz data
+        quiz_data['title'] = "Personalized Practice Assessment"
+        return jsonify(quiz_data)
+
+    except Exception as e:
+        print(f"Error generating adaptive assessment: {e}")
+        return jsonify({"error": "Failed to generate AI assessment. Please try again later."}), 500
+
 # --- NEW AI CHATBOT API ---
 
 @app.route('/api/ai/chatbot', methods=['POST'])
