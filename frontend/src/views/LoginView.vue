@@ -91,4 +91,5 @@ button:hover { background-color: #218838; }
   margin-top: 1rem;
   text-align: center;
 }
+.extra-links { margin-top: 1rem; text-align: center; }
 </style>
