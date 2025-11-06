@@ -60,7 +60,7 @@ const handleLogout = () => {
   background-color: #fff;
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  padding: 0 2rem; /* Align padding with the main app container */
+  padding: 0 2rem;
 }
 
 .main-nav {
