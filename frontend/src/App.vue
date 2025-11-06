@@ -23,7 +23,7 @@ const handleLogout = () => {
         
         <div class="nav-spacer"></div>
 
-        <!-- Show these links only if user is NOT logged in -->
+      
         <template v-if="!authStore.isAuthenticated">
           <RouterLink to="/login">Login</RouterLink>
           <RouterLink to="/register">Register</RouterLink>
