@@ -1,19 +1,8 @@
+// frontend/src/stores/auth.js
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import axios from 'axios';
-
-// configured axios instance for authenticated requests
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
-});
-
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import axios from 'axios'; // Keep for public login/register calls
+import apiClient from '@/api'; // Import our new central client
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -30,6 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   async function login(email, password) {
     try {
+      // Login is a public route, so we can use the base axios instance
       const response = await axios.post('http://localhost:5000/api/auth/login', {
         email,
         password,
@@ -38,28 +28,27 @@ export const useAuthStore = defineStore('auth', () => {
       const newToken = response.data.access_token;
       token.value = newToken;
       localStorage.setItem('token', newToken);
-
+      
       // After getting the token, immediately fetch the user's profile
       await fetchProfile();
       
       return 'success';
     } catch (error) {
-      logout(); // Clear any lingering state on failure
-      console.error('Login failed:', error);
+      logout();
       throw new Error(error.response?.data?.error || 'Login failed');
     }
   }
 
   async function fetchProfile() {
-    if (!token.value) return;
+    if (!localStorage.getItem('token')) return;
     try {
+      // Use the central apiClient for this authenticated request
       const response = await apiClient.get('/profile');
       user.value = response.data;
       localStorage.setItem('user', JSON.stringify(response.data));
     } catch (error) {
       console.error('Failed to fetch profile:', error);
-      // If fetching fails (e.g expired token) log the user out
-      logout();
+      logout(); // If fetching fails (e.g., expired token), log the user out
     }
   }
 

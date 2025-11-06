@@ -71,7 +71,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import axios from 'axios';
+import apiClient from '@/api';
 import ChatbotWidget from '@/components/ChatbotWidget.vue';
 
 const route = useRoute();
@@ -85,11 +85,6 @@ const expandedArticles = ref({});
 const toggleArticle = (contentId) => {
   expandedArticles.value[contentId] = !expandedArticles.value[contentId];
 };
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
-  headers: { Authorization: `Bearer ${authStore.token}` }
-});
 
 const fetchCourseDetails = async () => {
   const courseId = route.params.courseId;

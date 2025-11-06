@@ -153,9 +153,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
 import { RouterLink } from 'vue-router';
-import axios from 'axios';
+import apiClient from '@/api';
 
 // --- STATE MANAGEMENT ---
 const authStore = useAuthStore();
@@ -172,12 +171,6 @@ const newQuestion = ref(defaultQuestionState());
 const isGeneratingQuiz = ref(false);
 const isEditingCourse = ref(false);
 const editingCourseData = ref({ id: null, title: '', description: '' });
-
-// --- API CLIENT SETUP ---
-const apiClient = axios.create({ 
-  baseURL: 'http://localhost:5000/api', 
-  headers: { Authorization: `Bearer ${authStore.token}` } 
-});
 
 // --- API HELPER FUNCTIONS ---
 const showApiMessage = (msg, error = false) => {

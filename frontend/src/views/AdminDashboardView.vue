@@ -73,21 +73,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import axios from 'axios';
+import apiClient from '@/api';
 
-const authStore = useAuthStore();
 const users = ref([]);
 const isLoading = ref(true);
 const error = ref('');
 const message = ref(''); // For success/error messages
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
-  headers: {
-    Authorization: `Bearer ${authStore.token}`
-  }
-});
 
 const newUser = ref({
   firstName: '',
