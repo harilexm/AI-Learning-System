@@ -841,5 +841,59 @@ def handle_chatbot_query():
         print(f"An error occurred with the OpenAI API (Chatbot): {e}")
         return jsonify({"error": f"An error occurred while communicating with the AI tutor."}), 500
 
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+    user = User.query.filter_by(email=email).first()
+
+    # SECURITY: Always return a success message to prevent email enumeration
+    if user:
+        # Generate a secure, timed token (expires in 1 hour)
+        token = serializer.dumps(user.email, salt='password-reset-salt')
+        # This is the URL to your frontend page
+        reset_url = f"http://localhost:5173/reset-password?token={token}"
+
+        msg = Message(
+            "Password Reset Request",
+            recipients=[user.email]
+        )
+        msg.body = f"Hello,\n\nPlease click the following link to reset your password:\n{reset_url}\n\nIf you did not request this, please ignore this email."
+        
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+            # Silently fail for the user, but log it on the server
+            pass
+
+    return jsonify({"message": "If an account with that email exists, a password reset link has been sent."})
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    token = data.get('token')
+    new_password = data.get('password')
+
+    if not token or not new_password:
+        return jsonify({"error": "Token and new password are required."}), 400
+
+    try:
+        # Verify the token's signature and that it hasn't expired (3600 seconds = 1 hour)
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
+    except Exception:
+        return jsonify({"error": "The password reset link is invalid or has expired."}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
+    # Update the user's password
+    hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    user.password_hash = hashed_password
+    db.session.commit()
+
+    return jsonify({"message": "Your password has been reset successfully."})
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
