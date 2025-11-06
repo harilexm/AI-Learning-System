@@ -20,7 +20,7 @@ const handleLogout = () => {
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
         
-        <!-- Spacer to push auth links to the right -->
+        
         <div class="nav-spacer"></div>
 
         <!-- Show these links only if user is NOT logged in -->
