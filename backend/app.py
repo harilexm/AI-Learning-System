@@ -44,8 +44,6 @@ jwt = JWTManager(app)
 mail = Mail(app)
 # We use the JWT_SECRET_KEY as a salt for the serializer for convenience
 serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
-db.init_app(app)
-bcrypt = Bcrypt(app)
 
 # --- Mail Configuration ---
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
@@ -853,6 +851,9 @@ def forgot_password():
         token = serializer.dumps(user.email, salt='password-reset-salt')
         # This is the URL to your frontend page
         reset_url = f"http://localhost:5173/reset-password?token={token}"
+        print("--- PASSWORD RESET ---")
+        print(f"Password reset link for {user.email}: {reset_url}")
+        print("----------------------")
 
         msg = Message(
             "Password Reset Request",

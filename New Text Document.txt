@@ -1,6 +1,6 @@
 seed info:
 username: unani_mous
 email: umer.abdullah9891@gmail.com
-pass: AIsystem@1234
+pass: AIsystem@12345
 First Name: Umer
 Last Name: Abdullah
