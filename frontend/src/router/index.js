@@ -102,7 +102,17 @@ const router = createRouter({
         requiresAuth: true,
         allowedRoles: ['student'] // Only students should be taking quizzes
       }
-    }
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('../views/ForgotPasswordView.vue')
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('../views/ResetPasswordView.vue')
+    },
   ]
 })
 
