@@ -12,6 +12,9 @@
       </div>
       <button type="submit">Log In</button>
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <div class="extra-links">
+        <RouterLink to="/forgot-password">Forgot Password?</RouterLink>
+      </div>
     </form>
   </div>
 </template>
