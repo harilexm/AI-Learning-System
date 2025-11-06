@@ -31,8 +31,9 @@ const handleLogout = () => {
         
         <!-- Show these links only if user IS logged in -->
         <template v-if="authStore.isAuthenticated">
+          <RouterLink to="/profile">My Profile</RouterLink>
           <RouterLink to="/dashboard">Dashboard</RouterLink>
-          
+
           <RouterLink v-if="authStore.isTeacher || authStore.isAdmin" to="/manage-courses">
           Manage Courses
           </RouterLink>
