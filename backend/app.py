@@ -47,6 +47,14 @@ serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
+# --- Mail Configuration ---
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+
 # OpenAI Configuration
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 if not openai.api_key:
