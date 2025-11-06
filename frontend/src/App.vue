@@ -92,7 +92,7 @@ const handleLogout = () => {
 }
 
 .nav-spacer {
-  flex-grow: 1; /* pushes the items on either side apart */
+  flex-grow: 1;
 }
 
 .logout-link {
