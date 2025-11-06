@@ -1,18 +1,6 @@
 <template>
   <div class="dashboard-container">
     
-    <!-- NEW: Personalized Assessment Section -->
-    <div class="assessment-section">
-      <h2>Practice and Improve</h2>
-      <p>Generate a personalized practice test based on your recent quiz performance to target your weak areas.</p>
-      <button @click="handleGenerateAssessment" :disabled="isGeneratingAssessment" class="btn btn-primary">
-        {{ isGeneratingAssessment ? 'Analyzing your performance...' : '🤖 Generate a Personalized Practice Test' }}
-      </button>
-      <p v-if="assessmentMessage" class="message">{{ assessmentMessage }}</p>
-    </div>
-    
-    <hr class="divider" />
-
     <!-- NEW: Recommendations Section -->
     <div class="recommendations-section">
       <h2>Recommended for You</h2>
@@ -56,42 +44,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { RouterLink, useRouter } from 'vue-router'; // <-- Import useRouter
+import { RouterLink } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import apiClient from '@/api';
+import axios from 'axios';
 
 const authStore = useAuthStore();
-const router = useRouter(); // <-- Initialize router
 const courses = ref([]);
-const recommendations = ref([]);
+const recommendations = ref([]); // New state for recommendations
 const isLoadingCourses = ref(true);
-const isLoadingRecs = ref(true);
+const isLoadingRecs = ref(true); // New loading state
 const error = ref('');
-const isGeneratingAssessment = ref(false);
-const assessmentMessage = ref('');
-
-
-// --- NEW METHOD ---
-const handleGenerateAssessment = async () => {
-    isGeneratingAssessment.value = true;
-    assessmentMessage.value = '';
-    try {
-        const response = await apiClient.post('/ai/generate-assessment');
-
-        if (response.data.message) {
-            // The API returned a message (e.g., "Great job!") instead of a quiz
-            assessmentMessage.value = response.data.message;
-        } else if (response.data.questions) {
-            // The API returned a quiz, store it and navigate
-            authStore.tempGeneratedQuiz = response.data;
-            router.push({ name: 'quiz-player', params: { contentId: 'generated' } });
-        }
-    } catch (err) {
-        assessmentMessage.value = err.response?.data?.error || 'Could not generate assessment.';
-    } finally {
-        isGeneratingAssessment.value = false;
-    }
-};
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5000/api',
@@ -145,27 +107,6 @@ onMounted(() => {
   padding: 2rem;
   border-radius: 8px;
   margin-bottom: 2rem;
-}
-.assessment-section {
-    text-align: center;
-    padding: 2rem;
-    background: #e9ecef;
-    border-radius: 8px;
-}
-.assessment-section .btn-primary {
-    background-color: #6f42c1;
-    color: white;
-    font-size: 1.1rem;
-    padding: 0.8rem 1.5rem;
-}
-.assessment-section .btn-primary:disabled {
-    background-color: #b39ddb;
-    cursor: not-allowed;
-}
-.message {
-    margin-top: 1rem;
-    font-weight: 500;
-    color: #007bff;
 }
 .recommendations-grid {
   display: grid;
