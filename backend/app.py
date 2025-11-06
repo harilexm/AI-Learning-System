@@ -40,6 +40,13 @@ if not jwt_secret:
 app.config["JWT_SECRET_KEY"] = jwt_secret
 jwt = JWTManager(app)
 
+# --- Initialize Extensions ---
+mail = Mail(app)
+# We use the JWT_SECRET_KEY as a salt for the serializer for convenience
+serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
+db.init_app(app)
+bcrypt = Bcrypt(app)
+
 # OpenAI Configuration
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 if not openai.api_key:
