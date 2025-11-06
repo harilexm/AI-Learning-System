@@ -60,6 +60,15 @@ const router = createRouter({
         allowedRoles: ['administrator'] // Strictly Admins only
       }
     },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../views/ProfileView.vue'),
+      meta: {
+        requiresAuth: true
+        // No 'allowedRoles' means any authenticated user can access it
+      }
+    },
     // ... (inside the routes array)
     {
       path: '/manage-courses',
