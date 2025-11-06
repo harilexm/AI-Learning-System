@@ -100,7 +100,7 @@ const handleLogout = () => {
 }
 
 .main-content {
-  flex-grow: 1; /* main content area fills available space */
+  flex-grow: 1;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
