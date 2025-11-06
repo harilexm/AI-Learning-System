@@ -154,6 +154,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/api';
 
 // --- STATE MANAGEMENT ---

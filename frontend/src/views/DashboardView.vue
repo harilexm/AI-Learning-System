@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     
     <!-- NEW: Recommendations Section -->
-    <div class="recommendations-section">
+    <div v-if="authStore.isStudent" class="recommendations-section">
       <h2>Recommended for You</h2>
       <div v-if="isLoadingRecs" class="loading">Generating recommendations...</div>
       <div v-else-if="recommendations.length > 0" class="recommendations-grid">
@@ -19,8 +19,7 @@
       </div>
       <p v-else class="loading">Complete more tagged content to get new recommendations!</p>
     </div>
-
-    <hr class="divider" />
+    <hr v-if="authStore.isStudent" class="divider" />
 
     <!-- Existing Course Library -->
     <h1>Course Library</h1>
