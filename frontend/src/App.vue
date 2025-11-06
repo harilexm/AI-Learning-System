@@ -29,7 +29,7 @@ const handleLogout = () => {
           <RouterLink to="/register">Register</RouterLink>
         </template>
         
-        <!-- Show these links only if user IS logged in -->
+        
         <template v-if="authStore.isAuthenticated">
           <RouterLink to="/profile">My Profile</RouterLink>
           <RouterLink to="/dashboard">Dashboard</RouterLink>
