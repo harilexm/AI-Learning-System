@@ -164,7 +164,6 @@ def change_password():
     user.password_hash = new_hashed_password
     
     db.session.commit()
-
     return jsonify({"message": "Password updated successfully."})
 
 @app.route('/api/quizzes/<uuid:content_id>', methods=['GET'])
