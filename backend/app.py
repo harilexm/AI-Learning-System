@@ -189,16 +189,11 @@ def get_quiz_questions(content_id):
 
 # --- REPLACE this entire function in your file ---
 
-# backend/app.py
-
-# --- REPLACE this entire function in your file ---
-
 @app.route('/api/quizzes/<uuid:content_id>/submit', methods=['POST'])
 @roles_required('student')
 def submit_quiz(content_id):
     """
-    Receives student answers, grades them, saves the attempt with a correct attempt number, 
-    and returns results.
+    Receives student answers, grades them, saves the attempt, AND marks the content as complete.
     """
     content = LearningContent.query.get_or_404(content_id)
     if content.type != 'quiz' or not content.quiz_data:
@@ -219,26 +214,48 @@ def submit_quiz(content_id):
     
     percentage = round((score / total_questions) * 100, 2) if total_questions > 0 else 0
 
-    # --- THIS IS THE FIX ---
-    # 1. Count previous attempts for this specific quiz by this student.
+    # --- Logic for handling multiple attempts (unchanged) ---
     previous_attempts = AssessmentAttempt.query.filter_by(
         student_id=student.id,
         content_id=content_id
     ).count()
-
-    # 2. The new attempt number is the count of previous attempts + 1.
     new_attempt_number = previous_attempts + 1
 
-    # 3. Save the new attempt with the correct attempt number.
+    # Save the new assessment attempt
     new_attempt = AssessmentAttempt(
         content_id=content_id,
         student_id=student.id,
-        attempt_number=new_attempt_number, # <-- Use the calculated number
+        attempt_number=new_attempt_number,
         score=percentage,
         max_score=100.00,
         answers=student_answers
     )
     db.session.add(new_attempt)
+
+    # --- NEW LOGIC TO UPDATE COMPLETION PROGRESS ---
+    # Find the progress record for this student and this piece of content.
+    progress_record = StudentContentProgress.query.filter_by(
+        student_id=student.id,
+        content_id=content_id
+    ).first()
+
+    if not progress_record:
+        # If no progress record exists at all, create a new one and mark it as completed.
+        new_progress_record = StudentContentProgress(
+            student_id=student.id,
+            content_id=content_id,
+            status='completed',
+            completed_at=datetime.datetime.utcnow()
+        )
+        db.session.add(new_progress_record)
+    elif progress_record.status != 'completed':
+        # If a record exists but isn't marked as 'completed', update it.
+        # This handles the case where a student might have started but not finished.
+        progress_record.status = 'completed'
+        progress_record.completed_at = datetime.datetime.utcnow()
+    # If a record exists and is already 'completed', we do nothing.
+
+    # This single commit saves both the new AssessmentAttempt and the new/updated StudentContentProgress
     db.session.commit()
 
     return jsonify({
