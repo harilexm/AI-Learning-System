@@ -130,7 +130,6 @@ def login_user():
     data = request.get_json()
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({"error": "Email and password are required"}), 400
-
     user = User.query.filter_by(email=data['email']).first()
     if user and bcrypt.check_password_hash(user.password_hash, data['password']):
         access_token = create_access_token(identity=str(user.id))
