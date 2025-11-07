@@ -169,9 +169,6 @@ def change_password():
 @app.route('/api/quizzes/<uuid:content_id>', methods=['GET'])
 @jwt_required()
 def get_quiz_questions(content_id):
-    """
-    Fetches a quiz for a student, returning only the questions, not the answers.
-    """
     content = LearningContent.query.get_or_404(content_id)
     if content.type != 'quiz' or not content.quiz_data:
         return jsonify({"error": "This content is not a valid quiz."}), 404
