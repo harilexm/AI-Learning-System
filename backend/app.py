@@ -86,7 +86,6 @@ def roles_required(*roles):
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
             user_roles = {r.role for r in user.roles}
-            
             if not user_roles.intersection(roles):
                 return jsonify({"error": "Access forbidden: insufficient permissions"}), 403
             return fn(*args, **kwargs)
