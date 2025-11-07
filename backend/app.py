@@ -161,7 +161,7 @@ def change_password():
 
     # 2. SECURITY: Verify their current password is correct
     if not bcrypt.check_password_hash(user.password_hash, current_password):
-        return jsonify({"error": "Incorrect current password."}), 401 # Unauthorized
+        return jsonify({"error": "Incorrect current password."}), 401
 
     # 3. Hash the new password and update the user record
     new_hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
