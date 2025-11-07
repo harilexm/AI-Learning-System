@@ -154,12 +154,10 @@ def change_password():
     new_password = data.get('new_password')
     if not current_password or not new_password:
         return jsonify({"error": "Both current and new passwords are required."}), 400
-
-    # 1. Get the current user from the JWT token
     user_id = uuid.UUID(get_jwt_identity())
     user = User.query.get(user_id)
     if not user:
-        return jsonify({"error": "User not found."}), 404 # Should not happen if token is valid
+        return jsonify({"error": "User not found."}), 404
 
     # 2. SECURITY: Verify their current password is correct
     if not bcrypt.check_password_hash(user.password_hash, current_password):
