@@ -68,7 +68,6 @@ def admin_required():
         @jwt_required()
         def decorator(*args, **kwargs):
             current_user_id = get_jwt_identity()
-            # Find users roles from database
             user_roles = UserRole.query.filter_by(user_id=current_user_id).all()
             roles = [role.role for role in user_roles]
             # error handling
