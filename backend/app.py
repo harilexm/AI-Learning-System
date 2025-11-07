@@ -152,7 +152,6 @@ def change_password():
     data = request.get_json()
     current_password = data.get('current_password')
     new_password = data.get('new_password')
-
     if not current_password or not new_password:
         return jsonify({"error": "Both current and new passwords are required."}), 400
 
