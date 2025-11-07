@@ -172,8 +172,6 @@ def get_quiz_questions(content_id):
     content = LearningContent.query.get_or_404(content_id)
     if content.type != 'quiz' or not content.quiz_data:
         return jsonify({"error": "This content is not a valid quiz."}), 404
-
-    # SECURITY: Sanitize the questions, removing the correct answer index to prevent cheating.
     sanitized_questions = []
     for q in content.quiz_data.get('questions', []):
         sanitized_questions.append({
@@ -181,7 +179,6 @@ def get_quiz_questions(content_id):
             "text": q.get("text"),
             "options": q.get("options")
         })
-
     return jsonify({
         "quiz_id": str(content.id),
         "title": content.title,
