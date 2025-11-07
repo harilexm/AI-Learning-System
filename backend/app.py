@@ -42,7 +42,6 @@ jwt = JWTManager(app)
 
 # --- Initialize Extensions ---
 mail = Mail(app)
-# We use the JWT_SECRET_KEY as a salt for the serializer for convenience
 serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
 
 # --- Mail Configuration ---
