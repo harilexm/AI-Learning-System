@@ -70,7 +70,6 @@ def admin_required():
             current_user_id = get_jwt_identity()
             user_roles = UserRole.query.filter_by(user_id=current_user_id).all()
             roles = [role.role for role in user_roles]
-            # error handling
             if 'administrator' not in roles:
                 return jsonify({"error": "Admins only!"}), 403
             return fn(*args, **kwargs)
