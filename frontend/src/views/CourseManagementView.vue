@@ -48,6 +48,23 @@
           <RouterLink :to="{ name: 'course-progress', params: { courseId: selectedCourse.id } }" class="btn btn-secondary">
             View Student Progress
           </RouterLink>
+          <div class="card">
+            <h3>Course Assessments</h3>
+            <ul v-if="selectedCourse.assessments.length" class="assessment-list">
+              <li v-for="assessment in selectedCourse.assessments" :key="assessment.id">
+                <span>{{ assessment.title }}</span>
+                <div class="actions">
+                  <RouterLink :to="{ name: 'assessment-builder', params: { assessmentId: assessment.id } }" class="btn-edit">✏️</RouterLink>
+                  <button @click="handleDeleteAssessment(assessment.id)" class="btn-delete">x</button>
+                </div>
+              </li>
+            </ul>
+            <p v-else>No assessments for this course yet.</p>
+            <form @submit.prevent="handleCreateAssessment" class="add-assessment-form">
+              <input v-model="newAssessment.title" type="text" placeholder="New Assessment Title" required />
+              <button type="submit" class="btn-small">Create Assessment</button>
+            </form>
+          </div>
           
           <!-- Modules Section -->
           <div v-for="module in selectedCourse.modules" :key="module.id" class="card module-card">
