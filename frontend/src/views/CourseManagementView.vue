@@ -557,4 +557,10 @@ input, textarea, select { width: 100%; padding: 0.75rem; border: 1px solid #ccc;
 .message { padding: 1rem; border-radius: 4px; text-align: center; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100;}
 .success { background-color: #d4edda; color: #155724; }
 .error { background-color: #f8d7da; color: #721c24; }
+.assessment-list { list-style: none; padding: 0; margin-bottom: 1.5rem; }
+.assessment-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 4px; }
+.assessment-list li:hover { background-color: #f8f9fa; }
+.assessment-list .actions { display: flex; gap: 0.5rem; }
+.add-assessment-form { display: flex; gap: 0.5rem; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;}
+.add-assessment-form input { flex-grow: 1; }
 </style>
