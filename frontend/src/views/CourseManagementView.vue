@@ -287,6 +287,33 @@ const selectCourse = async (courseId) => {
   }
 };
 
+// --- NEW ASSESSMENT METHODS ---
+const handleCreateAssessment = async () => {
+  if (!newAssessment.value.title.trim()) return;
+  try {
+    const response = await apiClient.post(`/courses/${selectedCourse.value.id}/assessments`, {
+      title: newAssessment.value.title
+    });
+    newAssessment.value.title = '';
+    // Navigate to the builder for the newly created assessment
+    router.push({ name: 'assessment-builder', params: { assessmentId: response.data.assessment_id } });
+  } catch (err) {
+    handleApiError(err, 'Failed to create assessment.');
+  }
+};
+
+const handleDeleteAssessment = async (assessmentId) => {
+  if (confirm('Are you sure you want to delete this assessment?')) {
+    try {
+      await apiClient.delete(`/assessments/${assessmentId}`);
+      showApiMessage('Assessment deleted successfully.');
+      await selectCourse(selectedCourse.value.id); // Refresh
+    } catch (err) {
+      handleApiError(err, 'Failed to delete assessment.');
+    }
+  }
+};
+
 const handleCreateCourse = async () => {
   try {
     await apiClient.post('/courses', newCourse.value);
