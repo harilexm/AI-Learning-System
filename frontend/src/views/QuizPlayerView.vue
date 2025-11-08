@@ -49,15 +49,18 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
-import apiClient from '@/api';
+import { useAuthStore } from '@/stores/auth';
+import axios from 'axios';
 
 const route = useRoute();
+const authStore = useAuthStore();
 const quiz = ref(null);
 const studentAnswers = ref({});
 const results = ref(null);
 const isLoading = ref(true);
 const error = ref('');
 
+const apiClient = axios.create({ baseURL: 'http://localhost:5000/api', headers: { Authorization: `Bearer ${authStore.token}` } });
 
 onMounted(async () => {
   const contentId = route.params.contentId;

@@ -108,46 +108,23 @@ class LearningContent(db.Model):
 class AssessmentAttempt(db.Model):
     __tablename__ = 'assessment_attempts'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
-    # One of these will be populated, the other will be NULL
-    learning_content_id = db.Column(UUID(as_uuid=True), db.ForeignKey('learning_content.id'), nullable=True)
-    assessment_id = db.Column(UUID(as_uuid=True), db.ForeignKey('assessments.id'), nullable=True)
-    
+    content_id = db.Column(UUID(as_uuid=True), db.ForeignKey('learning_content.id'), nullable=False)
     student_id = db.Column(UUID(as_uuid=True), db.ForeignKey('students.id'), nullable=False)
-    attempt_number = db.Column(db.Integer, nullable=False, default=1)
     score = db.Column(NUMERIC(5, 2), nullable=False)
+    attempt_number = db.Column(db.Integer, nullable=False, default=1)
+    # --- THIS IS THE CRITICAL LINE ---
+    # Ensure this line exists and is correct.
     max_score = db.Column(NUMERIC(5, 2), nullable=False)
-    
-    # --- ADDED TO MATCH YOUR SCHEMA ---
-    is_submitted = db.Column(db.Boolean, nullable=False, default=False)
-    feedback = db.Column(JSONB, nullable=True)
     
     answers = db.Column(JSONB, nullable=False)
     submitted_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
     # Relationships
-    student = db.relationship('Student', backref='attempts')
+    student = db.relationship('Student', backref='quiz_attempts')
     quiz = db.relationship('LearningContent', backref='attempts')
-    assessment = db.relationship('Assessment', backref='attempts')
 
     def __repr__(self):
-        source_id = self.learning_content_id or self.assessment_id
-        return f'<AssessmentAttempt student={self.student_id} source={source_id} score={self.score}>'
-
-# --- NEW: Assessment Model ---
-class Assessment(db.Model):
-    __tablename__ = 'assessments'
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    course_id = db.Column(UUID(as_uuid=True), db.ForeignKey('courses.id'), nullable=False)
-    title = db.Column(db.String(255), nullable=False)
-    assessment_data = db.Column(JSONB, nullable=False)
-    created_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
-
-    # Relationships
-    course = db.relationship('Course', backref='assessments')
-
-    def __repr__(self):
-        return f'<Assessment {self.title}>'
+        return f'<AssessmentAttempt student={self.student_id} quiz={self.content_id} score={self.score}>'
 # backend/models.py
 # ... (all existing imports and models are unchanged) ...
 

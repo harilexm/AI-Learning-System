@@ -42,6 +42,7 @@ jwt = JWTManager(app)
 
 # --- Initialize Extensions ---
 mail = Mail(app)
+# We use the JWT_SECRET_KEY as a salt for the serializer for convenience
 serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
 
 # --- Mail Configuration ---
@@ -68,8 +69,10 @@ def admin_required():
         @jwt_required()
         def decorator(*args, **kwargs):
             current_user_id = get_jwt_identity()
+            # Find users roles from database
             user_roles = UserRole.query.filter_by(user_id=current_user_id).all()
             roles = [role.role for role in user_roles]
+            # error handling
             if 'administrator' not in roles:
                 return jsonify({"error": "Admins only!"}), 403
             return fn(*args, **kwargs)
@@ -86,6 +89,7 @@ def roles_required(*roles):
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
             user_roles = {r.role for r in user.roles}
+            
             if not user_roles.intersection(roles):
                 return jsonify({"error": "Access forbidden: insufficient permissions"}), 403
             return fn(*args, **kwargs)
@@ -145,33 +149,17 @@ def get_profile():
     if not user: return jsonify({"error": "User not found"}), 404
     return jsonify({"id": str(user.id), "username": user.username, "email": user.email, "roles": [r.role for r in user.roles]}), 200
 
-@app.route('/api/profile/change-password', methods=['POST'])
-@jwt_required()
-def change_password():
-    """Allows a logged-in user to change their own password."""
-    data = request.get_json()
-    current_password = data.get('current_password')
-    new_password = data.get('new_password')
-    if not current_password or not new_password:
-        return jsonify({"error": "Both current and new passwords are required."}), 400
-    user_id = uuid.UUID(get_jwt_identity())
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "User not found."}), 404
-    if not bcrypt.check_password_hash(user.password_hash, current_password):
-        return jsonify({"error": "Incorrect current password."}), 401
-    new_hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
-    user.password_hash = new_hashed_password
-    
-    db.session.commit()
-    return jsonify({"message": "Password updated successfully."})
-
 @app.route('/api/quizzes/<uuid:content_id>', methods=['GET'])
 @jwt_required()
 def get_quiz_questions(content_id):
+    """
+    Fetches a quiz for a student, returning only the questions, not the answers.
+    """
     content = LearningContent.query.get_or_404(content_id)
     if content.type != 'quiz' or not content.quiz_data:
         return jsonify({"error": "This content is not a valid quiz."}), 404
+
+    # SECURITY: Sanitize the questions, removing the correct answer index to prevent cheating.
     sanitized_questions = []
     for q in content.quiz_data.get('questions', []):
         sanitized_questions.append({
@@ -179,6 +167,7 @@ def get_quiz_questions(content_id):
             "text": q.get("text"),
             "options": q.get("options")
         })
+
     return jsonify({
         "quiz_id": str(content.id),
         "title": content.title,
@@ -189,11 +178,16 @@ def get_quiz_questions(content_id):
 
 # --- REPLACE this entire function in your file ---
 
+# backend/app.py
+
+# --- REPLACE this entire function in your file ---
+
 @app.route('/api/quizzes/<uuid:content_id>/submit', methods=['POST'])
 @roles_required('student')
 def submit_quiz(content_id):
     """
-    Receives student answers, grades them, saves the attempt, AND marks the content as complete.
+    Receives student answers, grades them, saves the attempt with a correct attempt number, 
+    and returns results.
     """
     content = LearningContent.query.get_or_404(content_id)
     if content.type != 'quiz' or not content.quiz_data:
@@ -214,49 +208,26 @@ def submit_quiz(content_id):
     
     percentage = round((score / total_questions) * 100, 2) if total_questions > 0 else 0
 
-    # --- Logic for handling multiple attempts (unchanged) ---
+    # --- THIS IS THE FIX ---
+    # 1. Count previous attempts for this specific quiz by this student.
     previous_attempts = AssessmentAttempt.query.filter_by(
         student_id=student.id,
-        learning_content_id=content_id
+        content_id=content_id
     ).count()
+
+    # 2. The new attempt number is the count of previous attempts + 1.
     new_attempt_number = previous_attempts + 1
 
-    # Save the new assessment attempt
+    # 3. Save the new attempt with the correct attempt number.
     new_attempt = AssessmentAttempt(
-        learning_content_id=content_id,
+        content_id=content_id,
         student_id=student.id,
-        attempt_number=new_attempt_number,
+        attempt_number=new_attempt_number, # <-- Use the calculated number
         score=percentage,
         max_score=100.00,
-        is_submitted=True,
         answers=student_answers
     )
     db.session.add(new_attempt)
-
-    # --- NEW LOGIC TO UPDATE COMPLETION PROGRESS ---
-    # Find the progress record for this student and this piece of content.
-    progress_record = StudentContentProgress.query.filter_by(
-        student_id=student.id,
-        content_id=content_id
-    ).first()
-
-    if not progress_record:
-        # If no progress record exists at all, create a new one and mark it as completed.
-        new_progress_record = StudentContentProgress(
-            student_id=student.id,
-            content_id=content_id,
-            status='completed',
-            completed_at=datetime.datetime.utcnow()
-        )
-        db.session.add(new_progress_record)
-    elif progress_record.status != 'completed':
-        # If a record exists but isn't marked as 'completed', update it.
-        # This handles the case where a student might have started but not finished.
-        progress_record.status = 'completed'
-        progress_record.completed_at = datetime.datetime.utcnow()
-    # If a record exists and is already 'completed', we do nothing.
-
-    # This single commit saves both the new AssessmentAttempt and the new/updated StudentContentProgress
     db.session.commit()
 
     return jsonify({
