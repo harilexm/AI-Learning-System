@@ -24,13 +24,15 @@
           <h2>Existing Courses</h2>
           <div v-if="isLoadingCourses">Loading...</div>
           <ul v-else-if="courses.length > 0" class="course-list">
-            <li v-for="course in courses" :key="course.id" @click="selectCourse(course.id)" :class="{ selected: selectedCourse?.id === course.id }">
-                    <!-- 1. Title is now wrapped in a span -->
-            <span>{{ course.title }}</span>
-            
-            <!-- 2. The new delete button is added -->
-            <button @click="openEditModal(course)" class="btn-edit" title="Edit Course">✏️</button>
-            <button @click.stop="handleDeleteCourse(course.id)" class="btn-delete" title="Delete Course">x</button>
+            <li v-for="course in courses" :key="course.id" >
+              <!-- The clickable area is now just the span -->
+              <span @click="selectCourse(course.id)" class="course-title" :class="{ selected: selectedCourse?.id === course.id }">{{ course.title }}</span>
+              
+              <!-- Actions are grouped together -->
+              <div class="course-actions">
+                <button @click="openEditModal(course)" class="btn-edit" title="Edit Course">✏️</button>
+                <button @click.stop="handleDeleteCourse(course.id)" class="btn-delete" title="Delete Course">x</button>
+              </div>
             </li>
           </ul>
           <p v-else>No courses created yet.</p>
@@ -50,7 +52,7 @@
           </RouterLink>
           <div class="card">
             <h3>Course Assessments</h3>
-            <ul v-if="selectedCourse.assessments.length" class="assessment-list">
+            <ul v-if="selectedCourse.assessments && selectedCourse.assessments.length" class="assessment-list">
               <li v-for="assessment in selectedCourse.assessments" :key="assessment.id">
                 <span>{{ assessment.title }}</span>
                 <div class="actions">
@@ -68,46 +70,49 @@
 
           <!-- Modules Section -->
           <div v-for="module in selectedCourse.modules" :key="module.id" class="card module-card">
-            <h3>Module {{ module.order }}: {{ module.title }}</h3>
-            <button @click="handleDeleteModule(module.id)" class="btn-delete" title="Delete Module">x</button>
+            <div class="module-header">
+                <h3>Module {{ module.order }}: {{ module.title }}</h3>
+                <button @click="handleDeleteModule(module.id)" class="btn-delete" title="Delete Module">x</button>
+            </div>
             <ul class="content-list">
               <li v-for="content in module.learning_contents" :key="content.id" class="content-item">
                 <span>{{ content.order }}. {{ content.title }} ({{ content.type }})</span>
                 <button @click="handleDeleteContent(content.id)" class="btn-delete" title="Delete Content Item">x</button>
               </li>
-              <li v-if="!module.learning_contents.length" class="content-item-empty">No content yet.</li>
+              <li v-if="!module.learning_contents || !module.learning_contents.length" class="content-item-empty">No content yet.</li>
             </ul>
 
-            <!-- ADD NEW CONTENT FORM (CORRECTED) -->
+            <!-- ADD NEW CONTENT FORM -->
             <form @submit.prevent="handleAddContent(module.id)" class="add-content-form">
               <h4>Add New Content to "{{ module.title }}"</h4>
               <input v-model="newContent[module.id].title" type="text" placeholder="Content Title" required/>
-              <!-- THIS IS THE FIX: The 'Quiz' option is now present -->
               <select v-model="newContent[module.id].type">
                 <option value="video">Video</option>
                 <option value="article">Article</option>
                 <option value="quiz">Quiz</option>
               </select>
-              <!-- ADD THIS NEW FORM GROUP -->
               <div class="form-group tag-group">
                 <label>Tags (comma-separated)</label>
                 <input v-model="newContent[module.id].tags" type="text" placeholder="e.g., algebra, intro, calculus" />
               </div>
 
-              <!-- Conditional fields based on type -->
+              <!-- Conditional fields -->
               <input v-if="newContent[module.id].type === 'video'" v-model="newContent[module.id].url" type="text" placeholder="Video URL" />
-              <textarea v-if="newContent[module.id].type === 'article'" v-model="newContent[module.id].body" placeholder="Article content..."></textarea>
-              <button 
-                  v-if="newContent[module.id].body && newContent[module.id].body.length >= 100" 
-                  @click.prevent="handleGenerateQuiz(module.id)" 
-                  class="btn-generate-quiz"
-                  :disabled="isGeneratingQuiz">
-                  {{ isGeneratingQuiz ? 'Generating...' : '🤖 Generate Quiz from this Article' }}
-                </button>
-              <!-- QUIZ BUILDER UI (Now correctly linked to the select option) -->
+              <div v-if="newContent[module.id].type === 'article'">
+                  <textarea v-model="newContent[module.id].body" placeholder="Article content..."></textarea>
+                  <button 
+                    v-if="newContent[module.id].body && newContent[module.id].body.length >= 100" 
+                    @click.prevent="handleGenerateQuiz(module.id)" 
+                    class="btn-generate-quiz"
+                    :disabled="isGeneratingQuiz">
+                    {{ isGeneratingQuiz ? 'Generating...' : '🤖 Generate Quiz from this Article' }}
+                  </button>
+              </div>
+              
+              <!-- QUIZ BUILDER UI -->
               <div v-if="newContent[module.id].type === 'quiz'" class="quiz-builder">
                 <div class="question-list">
-                  <div v-for="(q, index) in newContent[module.id].quiz_data.questions" :key="index" class="question-preview">
+                  <div v-for="(q, index) in newContent[module.id].quiz_.questions" :key="index" class="question-preview">
                     <strong>Q{{index+1}}:</strong> {{ q.text }} 
                     <button @click.prevent="removeQuestion(module.id, index)" class="btn-remove-q" title="Remove Question">x</button>
                   </div>
@@ -170,12 +175,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { RouterLink } from 'vue-router';
+import { useRouter, RouterLink } from 'vue-router'; 
 import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/api';
 
 // --- STATE MANAGEMENT ---
-const router = useRouter(); // Use router for navigation
+const router = useRouter(); // <-- Initialize the router
 const authStore = useAuthStore();
 const courses = ref([]);
 const selectedCourse = ref(null);
@@ -198,14 +203,102 @@ const showApiMessage = (msg, error = false) => {
   isError.value = error;
   setTimeout(() => message.value = '', 4000);
 };
+const handleApiError = (err, defaultMsg) => {
+  const errorMsg = err.response?.data?.error || defaultMsg;
+  showApiMessage(errorMsg, true);
+};
 
-// --- NEW UPDATE METHODS ---
+// Data Fectching
+const fetchCourses = async () => {
+  isLoadingCourses.value = true;
+  try {
+    const response = await apiClient.get('/courses');
+    courses.value = response.data;
+  } catch (err) { 
+    handleApiError(err, 'Failed to load courses.'); 
+  } finally {
+    isLoadingCourses.value = false;
+  }
+};
+const selectCourse = async (courseId) => {
+  try {
+    const response = await apiClient.get(`/courses/${courseId}`);
+    selectedCourse.value = response.data;
+    selectedCourse.value.modules.forEach(module => {
+      newContent.value[module.id] = { 
+        title: '', 
+        type: 'video', 
+        url: '', 
+        body: '', 
+        quiz_data: { questions: [] },
+        tags: '' 
+      };
+    });
+  } catch (err) { 
+    handleApiError(err, 'Failed to load course details.'); 
+  }
+};
+
+// Create Methods
+const handleCreateCourse = async () => {
+  try {
+    await apiClient.post('/courses', newCourse.value);
+    showApiMessage('Course created successfully.');
+    newCourse.value = { title: '', description: '' };
+    await fetchCourses();
+  } catch (err) { 
+    handleApiError(err, 'Failed to create course.'); 
+  }
+};
+const handleAddModule = async () => {
+  const nextOrder = (selectedCourse.value.modules.length || 0) + 1;
+  const payload = { ...newModule.value, order: nextOrder };
+  try {
+    await apiClient.post(`/courses/${selectedCourse.value.id}/modules`, payload);
+    showApiMessage('Module added successfully.');
+    newModule.value.title = '';
+    await selectCourse(selectedCourse.value.id);
+  } catch (err) { 
+    handleApiError(err, 'Failed to add module.'); 
+  }
+};
+const handleAddContent = async (moduleId) => {
+  const module = selectedCourse.value.modules.find(m => m.id === moduleId);
+  const nextOrder = (module.learning_contents.length || 0) + 1;
+  const payload = { ...newContent.value[moduleId], order: nextOrder };
+
+  if (payload.type === 'quiz' && payload.quiz_data.questions.length === 0) {
+      showApiMessage('A quiz must have at least one question before saving.', true);
+      return;
+  }
+  try {
+    await apiClient.post(`/modules/${moduleId}/content`, payload);
+    showApiMessage('Content added successfully.');
+    newContent.value[moduleId] = { title: '', type: 'video', url: '', body: '', quiz_data: { questions: [] } };
+    await selectCourse(selectedCourse.value.id);
+  } catch (err) { 
+    handleApiError(err, 'Failed to add content.'); 
+  }
+};
+const handleCreateAssessment = async () => {
+  if (!newAssessment.value.title.trim()) return;
+  try {
+    const response = await apiClient.post(`/courses/${selectedCourse.value.id}/assessments`, {
+      title: newAssessment.value.title
+    });
+    newAssessment.value.title = '';
+    // Navigate to the builder for the newly created assessment
+    router.push({ name: 'assessment-builder', params: { assessmentId: response.data.assessment_id } });
+  } catch (err) {
+    handleApiError(err, 'Failed to create assessment.');
+  }
+};
+
+// UPDATE METHODS
 const openEditModal = (course) => {
-  // Create a copy of the course data to avoid modifying the original list directly
   editingCourseData.value = { ...course };
   isEditingCourse.value = true;
 };
-
 const handleUpdateCourse = async () => {
   if (!editingCourseData.value.id) return;
   try {
@@ -221,24 +314,57 @@ const handleUpdateCourse = async () => {
   }
 };
 
-const handleApiError = (err, defaultMsg) => {
-  const errorMsg = err.response?.data?.error || defaultMsg;
-  showApiMessage(errorMsg, true);
+// DELETE METHODS
+const handleDeleteCourse = async (courseId) => {
+  if (confirm('Are you sure you want to delete this entire course? This action cannot be undone.')) {
+    try {
+      await apiClient.delete(`/courses/${courseId}`);
+      showApiMessage('Course deleted successfully.');
+      selectedCourse.value = null; // Deselect if the current course was deleted
+      await fetchCourses(); // Refresh the list
+    } catch (err) {
+      handleApiError(err, 'Failed to delete course.');
+    }
+  }
 };
-
-const fetchCourses = async () => {
-  isLoadingCourses.value = true;
-  try {
-    const response = await apiClient.get('/courses');
-    courses.value = response.data;
-  } catch (err) { 
-    handleApiError(err, 'Failed to load courses.'); 
-  } finally {
-    isLoadingCourses.value = false;
+const handleDeleteModule = async (moduleId) => {
+  if (confirm('Are you sure you want to delete this module and all its content?')) {
+    try {
+      await apiClient.delete(`/modules/${moduleId}`);
+      showApiMessage('Module deleted successfully.');
+      // Refresh the details of the currently selected course
+      await selectCourse(selectedCourse.value.id);
+    } catch (err) {
+      handleApiError(err, 'Failed to delete module.');
+    }
+  }
+};
+const handleDeleteContent = async (contentId) => {
+  if (confirm('Are you sure you want to delete this content item?')) {
+    try {
+      await apiClient.delete(`/content/${contentId}`);
+      showApiMessage('Content item deleted successfully.');
+      // Refresh the details of the currently selected course
+      await selectCourse(selectedCourse.value.id);
+    } catch (err) {
+      handleApiError(err, 'Failed to delete content item.');
+    }
+  }
+};
+const handleDeleteAssessment = async (assessmentId) => {
+  if (confirm('Are you sure you want to delete this assessment?')) {
+    try {
+      await apiClient.delete(`/assessments/${assessmentId}`);
+      showApiMessage('Assessment deleted successfully.');
+      await selectCourse(selectedCourse.value.id); // Refresh
+    } catch (err) {
+      handleApiError(err, 'Failed to delete assessment.');
+    }
   }
 };
 
-// --- NEW AI QUIZ GENERATION METHOD ---
+
+// AI QUIZ GENERATION METHOD
 const handleGenerateQuiz = async (moduleId) => {
   const articleText = newContent.value[moduleId].body;
   if (!articleText || articleText.length < 100) {
@@ -266,98 +392,6 @@ const handleGenerateQuiz = async (moduleId) => {
     isGeneratingQuiz.value = false;
   }
 };
-
-
-const selectCourse = async (courseId) => {
-  try {
-    const response = await apiClient.get(`/courses/${courseId}`);
-    selectedCourse.value = response.data;
-    selectedCourse.value.modules.forEach(module => {
-      newContent.value[module.id] = { 
-        title: '', 
-        type: 'video', 
-        url: '', 
-        body: '', 
-        quiz_data: { questions: [] },
-        tags: '' 
-      };
-    });
-  } catch (err) { 
-    handleApiError(err, 'Failed to load course details.'); 
-  }
-};
-
-// --- NEW ASSESSMENT METHODS ---
-const handleCreateAssessment = async () => {
-  if (!newAssessment.value.title.trim()) return;
-  try {
-    const response = await apiClient.post(`/courses/${selectedCourse.value.id}/assessments`, {
-      title: newAssessment.value.title
-    });
-    newAssessment.value.title = '';
-    // Navigate to the builder for the newly created assessment
-    router.push({ name: 'assessment-builder', params: { assessmentId: response.data.assessment_id } });
-  } catch (err) {
-    handleApiError(err, 'Failed to create assessment.');
-  }
-};
-
-const handleDeleteAssessment = async (assessmentId) => {
-  if (confirm('Are you sure you want to delete this assessment?')) {
-    try {
-      await apiClient.delete(`/assessments/${assessmentId}`);
-      showApiMessage('Assessment deleted successfully.');
-      await selectCourse(selectedCourse.value.id); // Refresh
-    } catch (err) {
-      handleApiError(err, 'Failed to delete assessment.');
-    }
-  }
-};
-
-const handleCreateCourse = async () => {
-  try {
-    await apiClient.post('/courses', newCourse.value);
-    showApiMessage('Course created successfully.');
-    newCourse.value = { title: '', description: '' };
-    await fetchCourses();
-  } catch (err) { 
-    handleApiError(err, 'Failed to create course.'); 
-  }
-};
-
-const handleAddModule = async () => {
-  const nextOrder = (selectedCourse.value.modules.length || 0) + 1;
-  const payload = { ...newModule.value, order: nextOrder };
-  try {
-    await apiClient.post(`/courses/${selectedCourse.value.id}/modules`, payload);
-    showApiMessage('Module added successfully.');
-    newModule.value.title = '';
-    await selectCourse(selectedCourse.value.id);
-  } catch (err) { 
-    handleApiError(err, 'Failed to add module.'); 
-  }
-};
-
-const handleAddContent = async (moduleId) => {
-  const module = selectedCourse.value.modules.find(m => m.id === moduleId);
-  const nextOrder = (module.learning_contents.length || 0) + 1;
-  const payload = { ...newContent.value[moduleId], order: nextOrder };
-
-  if (payload.type === 'quiz' && payload.quiz_data.questions.length === 0) {
-      showApiMessage('A quiz must have at least one question before saving.', true);
-      return;
-  }
-  try {
-    await apiClient.post(`/modules/${moduleId}/content`, payload);
-    showApiMessage('Content added successfully.');
-    newContent.value[moduleId] = { title: '', type: 'video', url: '', body: '', quiz_data: { questions: [] } };
-    await selectCourse(selectedCourse.value.id);
-  } catch (err) { 
-    handleApiError(err, 'Failed to add content.'); 
-  }
-};
-
-// --- QUIZ BUILDER METHODS ---
 const addQuestionToContent = (moduleId) => {
   if (!newQuestion.value.text || newQuestion.value.options.some(o => !o) || newQuestion.value.correct_answer_index === null) {
     showApiMessage('Please fill all question fields and select a correct answer.', true);
@@ -372,49 +406,7 @@ const removeQuestion = (moduleId, questionIndex) => {
   newContent.value[moduleId].quiz_data.questions.splice(questionIndex, 1);
 };
 
-// --- NEW DELETE METHODS ---
-const handleDeleteCourse = async (courseId) => {
-  if (confirm('Are you sure you want to delete this entire course? This action cannot be undone.')) {
-    try {
-      await apiClient.delete(`/courses/${courseId}`);
-      showApiMessage('Course deleted successfully.');
-      selectedCourse.value = null; // Deselect if the current course was deleted
-      await fetchCourses(); // Refresh the list
-    } catch (err) {
-      handleApiError(err, 'Failed to delete course.');
-    }
-  }
-};
-
-const handleDeleteModule = async (moduleId) => {
-  if (confirm('Are you sure you want to delete this module and all its content?')) {
-    try {
-      await apiClient.delete(`/modules/${moduleId}`);
-      showApiMessage('Module deleted successfully.');
-      // Refresh the details of the currently selected course
-      await selectCourse(selectedCourse.value.id);
-    } catch (err) {
-      handleApiError(err, 'Failed to delete module.');
-    }
-  }
-};
-
-const handleDeleteContent = async (contentId) => {
-  if (confirm('Are you sure you want to delete this content item?')) {
-    try {
-      await apiClient.delete(`/content/${contentId}`);
-      showApiMessage('Content item deleted successfully.');
-      // Refresh the details of the currently selected course
-      await selectCourse(selectedCourse.value.id);
-    } catch (err) {
-      handleApiError(err, 'Failed to delete content item.');
-    }
-  }
-};
-
-// --- LIFECYCLE HOOK ---
 onMounted(fetchCourses);
-
 </script>
 
 <style scoped>
