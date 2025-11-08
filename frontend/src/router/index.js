@@ -80,6 +80,15 @@ const router = createRouter({
         allowedRoles: ['teacher', 'administrator'] // Protect this route
       }
     },
+    {
+      path: '/assessment/:assessmentId/edit',
+      name: 'assessment-builder',
+      component: () => import('../views/AssessmentBuilderView.vue'),
+      meta: { 
+        requiresAuth: true,
+        allowedRoles: ['teacher', 'administrator']
+      }
+    },
         // ... (inside the routes array)
     {
       path: '/courses/:courseId', // e.g., /courses/some-uuid-string
