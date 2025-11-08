@@ -65,7 +65,7 @@
               <button type="submit" class="btn-small">Create Assessment</button>
             </form>
           </div>
-          
+
           <!-- Modules Section -->
           <div v-for="module in selectedCourse.modules" :key="module.id" class="card module-card">
             <h3>Module {{ module.order }}: {{ module.title }}</h3>
@@ -175,6 +175,7 @@ import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/api';
 
 // --- STATE MANAGEMENT ---
+const router = useRouter(); // Use router for navigation
 const authStore = useAuthStore();
 const courses = ref([]);
 const selectedCourse = ref(null);
@@ -189,6 +190,7 @@ const newQuestion = ref(defaultQuestionState());
 const isGeneratingQuiz = ref(false);
 const isEditingCourse = ref(false);
 const editingCourseData = ref({ id: null, title: '', description: '' });
+const newAssessment = ref({ title: '' });
 
 // --- API HELPER FUNCTIONS ---
 const showApiMessage = (msg, error = false) => {
