@@ -69,6 +69,7 @@ const router = createRouter({
         // No 'allowedRoles' means any authenticated user can access it
       }
     },
+    
     // ... (inside the routes array)
     {
       path: '/manage-courses',

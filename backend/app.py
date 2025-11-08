@@ -217,17 +217,18 @@ def submit_quiz(content_id):
     # --- Logic for handling multiple attempts (unchanged) ---
     previous_attempts = AssessmentAttempt.query.filter_by(
         student_id=student.id,
-        content_id=content_id
+        learning_content_id=content_id
     ).count()
     new_attempt_number = previous_attempts + 1
 
     # Save the new assessment attempt
     new_attempt = AssessmentAttempt(
-        content_id=content_id,
+        learning_content_id=content_id,
         student_id=student.id,
         attempt_number=new_attempt_number,
         score=percentage,
         max_score=100.00,
+        is_submitted=True,
         answers=student_answers
     )
     db.session.add(new_attempt)
