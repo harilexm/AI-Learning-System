@@ -71,7 +71,7 @@ const handleChangePassword = async () => {
     showMessage('New passwords do not match.', true);
     return;
   }
-  if (passwords.value.new_password.length < 6) {
+  if (passwords.value.new_password.length < 4) {
     showMessage('New password must be at least 6 characters long.', true);
     return;
   }

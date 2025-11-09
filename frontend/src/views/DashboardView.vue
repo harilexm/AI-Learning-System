@@ -45,19 +45,14 @@
 import { ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import axios from 'axios';
+import apiClient from '@/api'; 
 
 const authStore = useAuthStore();
 const courses = ref([]);
-const recommendations = ref([]); // New state for recommendations
+const recommendations = ref([]);
 const isLoadingCourses = ref(true);
-const isLoadingRecs = ref(true); // New loading state
+const isLoadingRecs = ref(true);
 const error = ref('');
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
-  headers: { Authorization: `Bearer ${authStore.token}` }
-});
 
 const fetchCourses = async () => {
   isLoadingCourses.value = true;
@@ -95,7 +90,11 @@ const getIconFor = (type) => {
 onMounted(() => {
   // Fetch both courses and recommendations when the page loads
   fetchCourses();
-  fetchRecommendations();
+  if (authStore.isStudent) {
+    fetchRecommendations();
+}else {
+  isLoadingRecs.value = false;
+}
 });
 </script>
 

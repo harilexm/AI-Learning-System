@@ -211,8 +211,8 @@ def submit_quiz(content_id):
     # --- THIS IS THE FIX ---
     # 1. Count previous attempts for this specific quiz by this student.
     previous_attempts = AssessmentAttempt.query.filter_by(
-        student_id=student.id,
-        content_id=content_id
+        student_id  =student.id,
+        learning_content_id=content_id
     ).count()
 
     # 2. The new attempt number is the count of previous attempts + 1.
@@ -220,7 +220,7 @@ def submit_quiz(content_id):
 
     # 3. Save the new attempt with the correct attempt number.
     new_attempt = AssessmentAttempt(
-        content_id=content_id,
+        learning_content_id=content_id,
         student_id=student.id,
         attempt_number=new_attempt_number, # <-- Use the calculated number
         score=percentage,
@@ -678,7 +678,7 @@ def get_course_performance(course_id):
 
     # 2. Find all assessment attempts for these quizzes
     all_attempts = AssessmentAttempt.query.filter(
-        AssessmentAttempt.content_id.in_(course_quiz_ids)
+        AssessmentAttempt.learning_content_id.in_(course_quiz_ids)
     ).all()
 
     # 3. Aggregate the data by student for a clean, structured response
@@ -698,7 +698,7 @@ def get_course_performance(course_id):
         
         # Add the current attempt's details
         performance_data[student_id]['attempts'].append({
-            "quiz_id": str(attempt.content_id),
+            "quiz_id": str(attempt.learning_content_id),
             "quiz_title": attempt.quiz.title,
             "attempt_number": attempt.attempt_number,
             "score": float(attempt.score) # Ensure score is a float

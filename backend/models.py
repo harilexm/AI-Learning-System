@@ -108,7 +108,7 @@ class LearningContent(db.Model):
 class AssessmentAttempt(db.Model):
     __tablename__ = 'assessment_attempts'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    content_id = db.Column(UUID(as_uuid=True), db.ForeignKey('learning_content.id'), nullable=False)
+    learning_content_id  = db.Column(UUID(as_uuid=True), db.ForeignKey('learning_content.id'), nullable=False)
     student_id = db.Column(UUID(as_uuid=True), db.ForeignKey('students.id'), nullable=False)
     score = db.Column(NUMERIC(5, 2), nullable=False)
     attempt_number = db.Column(db.Integer, nullable=False, default=1)
@@ -124,7 +124,7 @@ class AssessmentAttempt(db.Model):
     quiz = db.relationship('LearningContent', backref='attempts')
 
     def __repr__(self):
-        return f'<AssessmentAttempt student={self.student_id} quiz={self.content_id} score={self.score}>'
+        return f'<AssessmentAttempt student={self.student_id} quiz={self.learning_content_id } score={self.score}>'
 # backend/models.py
 # ... (all existing imports and models are unchanged) ...
 
@@ -144,4 +144,3 @@ class StudentContentProgress(db.Model):
 
     def __repr__(self):
         return f'<Progress student={self.student_id} content={self.content_id} status={self.status}>'
-    
