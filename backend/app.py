@@ -1,11 +1,9 @@
-# --- Imports ---
 import os
 import uuid
 import datetime
 import json
 from functools import wraps
 from collections import Counter
-
 # Third-party imports
 import openai
 from dotenv import load_dotenv
@@ -16,18 +14,16 @@ from flask_jwt_extended import create_access_token, JWTManager, jwt_required, ge
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.exc import IntegrityError
-
 # Local application imports
-from models import (db, User, UserRole, Student, Teacher, Course, Module, 
-                    LearningContent, StudentContentProgress, AssessmentAttempt)
+from models import (db, User, UserRole, Student, Teacher, Course, Module, LearningContent, StudentContentProgress, AssessmentAttempt)
 
-# --- Application Setup ---
+# Application Setup
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 
-# --- Configurations ---
+# Configurations
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY')
@@ -38,7 +34,7 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
 
-# --- Extensions Initialization ---
+# Extensions Initialization
 db.init_app(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
@@ -53,7 +49,7 @@ if not openai.api_key:
 if not app.config['SQLALCHEMY_DATABASE_URI'] or not app.config["JWT_SECRET_KEY"]:
     raise RuntimeError("FATAL ERROR: Database URL and JWT Secret Key must be set.")
 
-# --- Custom Decorators ---
+# Custom Decorators
 def roles_required(*roles):
     """Decorator to ensure user has at least one of the specified roles."""
     def wrapper(fn):
