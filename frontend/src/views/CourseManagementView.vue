@@ -154,11 +154,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
+
 import apiClient from '@/api';
 
 // --- STATE MANAGEMENT ---
-const authStore = useAuthStore();
+
 const courses = ref([]);
 const selectedCourse = ref(null);
 const isLoadingCourses = ref(true);

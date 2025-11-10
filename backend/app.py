@@ -149,6 +149,35 @@ def get_profile():
     if not user: return jsonify({"error": "User not found"}), 404
     return jsonify({"id": str(user.id), "username": user.username, "email": user.email, "roles": [r.role for r in user.roles]}), 200
 
+@app.route('/api/profile/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    """Allows a logged-in user to change their own password."""
+    data = request.get_json()
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+
+    if not current_password or not new_password:
+        return jsonify({"error": "Both current and new passwords are required."}), 400
+
+    # 1. Get the current user from the JWT token
+    user_id = uuid.UUID(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found."}), 404 # Should not happen if token is valid
+
+    # 2. SECURITY: Verify their current password is correct
+    if not bcrypt.check_password_hash(user.password_hash, current_password):
+        return jsonify({"error": "Incorrect current password."}), 401 # Unauthorized
+
+    # 3. Hash the new password and update the user record
+    new_hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    user.password_hash = new_hashed_password
+    
+    db.session.commit()
+
+    return jsonify({"message": "Password updated successfully."})
+
 @app.route('/api/quizzes/<uuid:content_id>', methods=['GET'])
 @jwt_required()
 def get_quiz_questions(content_id):
@@ -839,7 +868,7 @@ def handle_chatbot_query():
     except Exception as e:
         print(f"An error occurred with the OpenAI API (Chatbot): {e}")
         return jsonify({"error": f"An error occurred while communicating with the AI tutor."}), 500
-
+    
 @app.route('/api/auth/forgot-password', methods=['POST'])
 def forgot_password():
     data = request.get_json()
