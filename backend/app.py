@@ -459,25 +459,37 @@ def get_course_performance(course_id):
 @app.route('/api/students/me/recommendations', methods=['GET'])
 @roles_required('student')
 def get_recommendations():
-    student = Student.query.filter_by(user_id=get_jwt_identity()).first_or_404()
-    completed_content_ids = {p.content_id for p in student.progress}
-    if not completed_content_ids: return jsonify([])
+    """Generates personalized content recommendations for the logged-in student."""
+    student = Student.query.filter_by(user_id=get_jwt_identity()).first()
+    if not student:
+        return jsonify([])
 
-    completed_contents = LearningContent.query.filter(LearningContent.id.in_(completed_content_ids), LearningContent.tags != None).all()
-    all_tags = [tag.strip().lower() for c in completed_contents for tag in c.tags.split(',')]
-    if not all_tags: return jsonify([])
+    # THIS IS THE CORRECTED LOGIC - RESTORED FROM YOUR ORIGINAL CODE
+    completed_progress = StudentContentProgress.query.filter_by(student_id=student.id, status='completed').all()
+    completed_content_ids = {p.content_id for p in completed_progress}
+
+    if not completed_content_ids:
+        return jsonify([])
+
+    completed_contents = LearningContent.query.filter(LearningContent.id.in_(completed_content_ids), LearningContent.tags.isnot(None)).all()
+    all_tags = [tag.strip().lower() for c in completed_contents for tag in c.tags.split(',') if c.tags]
+    if not all_tags:
+        return jsonify([])
 
     top_tags = {tag for tag, count in Counter(all_tags).most_common(3)}
-    candidates = LearningContent.query.filter(LearningContent.id.notin_(completed_content_ids), LearningContent.tags != None).limit(50).all()
+    candidates = LearningContent.query.filter(LearningContent.id.notin_(completed_content_ids), LearningContent.tags.isnot(None)).limit(50).all()
     
     recommendations = []
     for content in candidates:
-        if top_tags.intersection({tag.strip().lower() for tag in content.tags.split(',')}):
+        if content.tags and top_tags.intersection({tag.strip().lower() for tag in content.tags.split(',') }):
             recommendations.append({
                 "id": str(content.id), "title": content.title, "type": content.type,
-                "course_id": str(content.module.course.id), "course_title": content.module.course.title
+                "course_id": str(content.module.course.id),
+                "module_title": content.module.title,
+                "course_title": content.module.course.title
             })
-        if len(recommendations) >= 5: break
+        if len(recommendations) >= 5:
+            break
             
     return jsonify(recommendations)
 
