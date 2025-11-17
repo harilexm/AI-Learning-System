@@ -85,7 +85,6 @@ const handleLogout = () => {
   background-color: transparent; 
 }
 
-/* Vue Router class for the active link */
 .main-nav a.router-link-exact-active {
   color: hsla(160, 100%, 37%, 1);
   border-bottom: 2px solid hsla(160, 100%, 37%, 1);
