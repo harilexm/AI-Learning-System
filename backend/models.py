@@ -22,7 +22,6 @@ class User(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
-    # define relationships
     roles = db.relationship('UserRole', backref='user', lazy=True, cascade="all, delete-orphan")
     student_profile = db.relationship('Student', backref='user', uselist=False, cascade="all, delete-orphan")
     teacher_profile = db.relationship('Teacher', backref='user', uselist=False, cascade="all, delete-orphan")
@@ -49,13 +48,13 @@ class Teacher(db.Model):
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), unique=True, nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
-    title = db.Column(db.String(100)) # e.g., "Professor", "Instructor"
+    title = db.Column(db.String(100))
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
     def __repr__(self):
         return f'<Teacher {self.first_name} {self.last_name}>'
-# new model down here as course, ai system etc
 
+# Course model
 class Course(db.Model):
     __tablename__ = 'courses'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -64,12 +63,13 @@ class Course(db.Model):
     created_by_teacher_id = db.Column(UUID(as_uuid=True), db.ForeignKey('teachers.id'), nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
-    # Relationships
     modules = db.relationship('Module', backref='course', lazy=True, cascade="all, delete-orphan")
     teacher = db.relationship('Teacher', backref='courses')
+    
     def __repr__(self):
         return f'<Course {self.title}>'
 
+# Module model
 class Module(db.Model):
     __tablename__ = 'modules'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -79,12 +79,11 @@ class Module(db.Model):
     module_order = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
-    # Relationships
     learning_contents = db.relationship('LearningContent', backref='module', lazy=True, cascade="all, delete-orphan")
-
+    
     def __repr__(self):
         return f'<Module {self.title}>'
-
+# LearningContent model
 class LearningContent(db.Model):
     __tablename__ = 'learning_content'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -97,14 +96,11 @@ class LearningContent(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
     quiz_data = db.Column(JSONB, nullable=True)
     tags = db.Column(db.String(255), nullable=True) # e.g., "algebra,calculus,intro"
+    
     def __repr__(self):
         return f'<LearningContent {self.title}>'
 
-# --- NEW MODEL (NOW WITH __repr__) ---
-# backend/models.py
-
-# --- Find and verify this specific class ---
-
+# AssessmentAttempt model
 class AssessmentAttempt(db.Model):
     __tablename__ = 'assessment_attempts'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -112,22 +108,17 @@ class AssessmentAttempt(db.Model):
     student_id = db.Column(UUID(as_uuid=True), db.ForeignKey('students.id'), nullable=False)
     score = db.Column(NUMERIC(5, 2), nullable=False)
     attempt_number = db.Column(db.Integer, nullable=False, default=1)
-    # --- THIS IS THE CRITICAL LINE ---
-    # Ensure this line exists and is correct.
     max_score = db.Column(NUMERIC(5, 2), nullable=False)
-    
     answers = db.Column(JSONB, nullable=False)
     submitted_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
-    # Relationships
     student = db.relationship('Student', backref='quiz_attempts')
     quiz = db.relationship('LearningContent', backref='attempts')
 
     def __repr__(self):
         return f'<AssessmentAttempt student={self.student_id} quiz={self.learning_content_id } score={self.score}>'
-# backend/models.py
-# ... (all existing imports and models are unchanged) ...
 
+# StudentContentProgress model
 class StudentContentProgress(db.Model):
     __tablename__ = 'student_content_progress'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -138,7 +129,6 @@ class StudentContentProgress(db.Model):
     completed_at = db.Column(db.DateTime(timezone=True))
     last_accessed_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
-    # Relationships for easy access
     student = db.relationship('Student', backref='progress_records')
     learning_content = db.relationship('LearningContent', backref='progress_records')
 
