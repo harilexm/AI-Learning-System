@@ -13,7 +13,6 @@ from flask_jwt_extended import create_access_token, JWTManager, jwt_required, ge
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.exc import IntegrityError
-# Local application imports
 from models import (db, User, UserRole, Student, Teacher, Course, Module, LearningContent, StudentContentProgress, AssessmentAttempt)
 
 # Application Setup
