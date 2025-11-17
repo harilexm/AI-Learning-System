@@ -83,6 +83,7 @@ class Module(db.Model):
     
     def __repr__(self):
         return f'<Module {self.title}>'
+    
 # LearningContent model
 class LearningContent(db.Model):
     __tablename__ = 'learning_content'
