@@ -49,7 +49,7 @@ if not app.config['SQLALCHEMY_DATABASE_URI'] or not app.config["JWT_SECRET_KEY"]
 
 # Custom Decorators
 def roles_required(*roles):
-    """Decorator to ensure user has at least one of the specified roles."""
+    "Decorator to ensure user has at least one of the specified roles."
     def wrapper(fn):
         @wraps(fn)
         @jwt_required()
@@ -62,7 +62,7 @@ def roles_required(*roles):
         return decorator
     return wrapper
 
-# --- Helper Functions ---
+# Helper Functions
 def handle_integrity_error(e):
     """Helper to handle common database integrity errors."""
     db.session.rollback()
@@ -72,12 +72,12 @@ def handle_integrity_error(e):
         return jsonify({"error": "Email already exists"}), 409
     return jsonify({"error": "A database error occurred. Please try again."}), 500
 
-# --- API Routes ---
+# API Routes
 @app.route('/')
 def home():
     return "AI-Powered Learning System Backend is running!"
 
-# --- Authentication Routes ---
+# Authentication Routes
 @app.route('/api/auth/register', methods=['POST'])
 def register_user():
     data = request.get_json()
@@ -89,7 +89,7 @@ def register_user():
         new_user = User(username=data['username'], email=data['email'], password_hash=hashed_password)
         db.session.add(new_user)
         db.session.flush() # Flush to get new_user.id
-        
+
         student_profile = Student(user_id=new_user.id, first_name=data['firstName'], last_name=data['lastName'])
         student_role = UserRole(user_id=new_user.id, role='student')
         db.session.add_all([student_profile, student_role])
