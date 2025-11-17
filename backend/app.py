@@ -150,7 +150,7 @@ def reset_password():
 
     return jsonify({"message": "Your password has been reset successfully."})
 
-# --- Profile and User Management ---
+# Profile and User Management
 @app.route('/api/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
@@ -230,7 +230,7 @@ def delete_user(user_id):
     db.session.commit()
     return jsonify({"message": f"User '{username}' has been deleted."})
 
-# --- Course, Module, and Content Management ---
+# Course, Module, and Content Management
 @app.route('/api/courses', methods=['POST'])
 @roles_required('teacher', 'administrator')
 def create_course():
@@ -349,7 +349,7 @@ def delete_learning_content(content_id):
     db.session.commit()
     return jsonify({"message": f"Content '{title}' has been deleted."})
 
-# --- Quiz and Progress Routes ---
+# Quiz and Progress Routes
 @app.route('/api/quizzes/<uuid:content_id>', methods=['GET'])
 @jwt_required()
 def get_quiz_questions(content_id):
@@ -401,7 +401,7 @@ def mark_content_complete(content_id):
     db.session.commit()
     return jsonify({"message": "Progress updated successfully", "status": "completed"})
 
-# --- Analytics and AI Routes ---
+# Analytics and AI Routes
 @app.route('/api/courses/<uuid:course_id>/progress', methods=['GET'])
 @roles_required('teacher', 'administrator')
 def get_course_progress(course_id):
@@ -458,7 +458,6 @@ def get_recommendations():
     if not student:
         return jsonify([])
 
-    # THIS IS THE CORRECTED LOGIC - RESTORED FROM YOUR ORIGINAL CODE
     completed_progress = StudentContentProgress.query.filter_by(student_id=student.id, status='completed').all()
     completed_content_ids = {p.content_id for p in completed_progress}
 
@@ -530,6 +529,5 @@ def handle_chatbot_query():
     except Exception as e:
         return jsonify({"error": f"An AI communication error occurred: {e}"}), 500
 
-# --- Main Execution ---
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
