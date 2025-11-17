@@ -32,7 +32,6 @@ const handleRequest = async () => {
 };
 </script>
 <style scoped>
-/* You can share styles with LoginView */
 .container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
 .form { padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
 p { color: #6c757d; }
