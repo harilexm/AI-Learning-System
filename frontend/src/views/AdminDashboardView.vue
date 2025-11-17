@@ -39,7 +39,6 @@
       </form>
     </div>
 
-    <!-- User List -->
     <h2>Existing Users</h2>
     <div v-if="isLoading">Loading users...</div>
     <div v-if="error" class="error-message">{{ error }}</div>
