@@ -25,10 +25,10 @@
           <div v-if="isLoadingCourses">Loading...</div>
           <ul v-else-if="courses.length > 0" class="course-list">
             <li v-for="course in courses" :key="course.id" @click="selectCourse(course.id)" :class="{ selected: selectedCourse?.id === course.id }">
-                    <!-- 1. Title is now wrapped in a span -->
+                    <!-- Title is now wrapped in a span -->
             <span>{{ course.title }}</span>
             
-            <!-- 2. The new delete button is added -->
+            <!-- The new delete button is added -->
             <button @click="openEditModal(course)" class="btn-edit" title="Edit Course">✏️</button>
             <button @click.stop="handleDeleteCourse(course.id)" class="btn-delete" title="Delete Course">x</button>
             </li>
@@ -87,7 +87,7 @@
                   :disabled="isGeneratingQuiz">
                   {{ isGeneratingQuiz ? 'Generating...' : '🤖 Generate Quiz from this Article' }}
                 </button>
-              <!-- QUIZ BUILDER UI (Now correctly linked to the select option) -->
+              <!-- QUIZ BUILDER UI -->
               <div v-if="newContent[module.id].type === 'quiz'" class="quiz-builder">
                 <div class="question-list">
                   <div v-for="(q, index) in newContent[module.id].quiz_data.questions" :key="index" class="question-preview">
@@ -115,7 +115,6 @@
             </form>
           </div>
           
-          <!-- Add New Module Form -->
           <div class="card">
             <h2>Add New Module</h2>
             <form @submit.prevent="handleAddModule">
@@ -128,7 +127,6 @@
     </div>
     
     <p v-if="message" class="message" :class="isError ? 'error' : 'success'">{{ message }}</p>
-    <!-- NEW: Edit Course Modal -->
     <div v-if="isEditingCourse" class="modal-overlay" @click.self="isEditingCourse = false">
       <div class="modal-content">
         <h2>Edit Course</h2>
@@ -154,10 +152,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
-
 import apiClient from '@/api';
-
-// --- STATE MANAGEMENT ---
 
 const courses = ref([]);
 const selectedCourse = ref(null);
@@ -173,14 +168,13 @@ const isGeneratingQuiz = ref(false);
 const isEditingCourse = ref(false);
 const editingCourseData = ref({ id: null, title: '', description: '' });
 
-// --- API HELPER FUNCTIONS ---
+// API HELPER FUNCTIONS
 const showApiMessage = (msg, error = false) => {
   message.value = msg;
   isError.value = error;
   setTimeout(() => message.value = '', 4000);
 };
 
-// --- NEW UPDATE METHODS ---
 const openEditModal = (course) => {
   // Create a copy of the course data to avoid modifying the original list directly
   editingCourseData.value = { ...course };
@@ -219,7 +213,7 @@ const fetchCourses = async () => {
   }
 };
 
-// --- NEW AI QUIZ GENERATION METHOD ---
+// AI QUIZ GENERATION METHOD
 const handleGenerateQuiz = async (moduleId) => {
   const articleText = newContent.value[moduleId].body;
   if (!articleText || articleText.length < 100) {
@@ -311,7 +305,7 @@ const handleAddContent = async (moduleId) => {
   }
 };
 
-// --- QUIZ BUILDER METHODS ---
+// QUIZ BUILDER METHODS
 const addQuestionToContent = (moduleId) => {
   if (!newQuestion.value.text || newQuestion.value.options.some(o => !o) || newQuestion.value.correct_answer_index === null) {
     showApiMessage('Please fill all question fields and select a correct answer.', true);
@@ -326,7 +320,7 @@ const removeQuestion = (moduleId, questionIndex) => {
   newContent.value[moduleId].quiz_data.questions.splice(questionIndex, 1);
 };
 
-// --- NEW DELETE METHODS ---
+// DELETE METHODS
 const handleDeleteCourse = async (courseId) => {
   if (confirm('Are you sure you want to delete this entire course? This action cannot be undone.')) {
     try {
@@ -366,119 +360,29 @@ const handleDeleteContent = async (contentId) => {
   }
 };
 
-// --- LIFECYCLE HOOK ---
 onMounted(fetchCourses);
 
 </script>
 
 <style scoped>
-/* All styles from before are still correct and included for completeness */
-.tag-group {
-  margin-top: 1rem;
-}
-.btn-generate-quiz {
-  display: block;
-  width: 100%;
-  margin-top: 0.5rem;
-  padding: 0.75rem;
-  background-color: #6f42c1; /* A nice purple for AI features */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-.btn-generate-quiz:disabled {
-  background-color: #b39ddb;
-  cursor: not-allowed;
-}
-/* --- NEW/MODIFIED STYLES --- */
-.course-list li {
-  /* ... existing styles ... */
-  padding: 0.8rem 0.5rem; /* Adjust padding */
-}
-.course-title {
-  flex-grow: 1;
-  cursor: pointer;
-  padding: 0 0.5rem;
-}
-.course-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.course-list li:hover .course-actions {
-  visibility: visible;
-  opacity: 1;
-}
-.btn-edit {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-}
-.btn-delete {
-  /* Make it always visible within the actions div now */
-  visibility: visible;
-  opacity: 1;
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1001;
-}
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 500px;
-}
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-.course-list li, .module-header, .content-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.btn-delete {
-  background-color: transparent;
-  color: #dc3545;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  font-weight: bold;
-  line-height: 24px;
-  text-align: center;
-  visibility: hidden; /* Hide by default */
-  opacity: 0;
-  transition: opacity 0.2s;
-}
+.tag-group {margin-top: 1rem;}
+.btn-generate-quiz {display: block; width: 100%; margin-top: 0.5rem; padding: 0.75rem; background-color: #6f42c1; color: white;border: none; border-radius: 4px; cursor: pointer; font-weight: bold;}
+.btn-generate-quiz:disabled { background-color: #b39ddb; cursor: not-allowed;}
+.course-list li { padding: 0.8rem 0.5rem;}
+.course-title { flex-grow: 1; cursor: pointer; padding: 0 0.5rem;}
+.course-actions { display: flex; align-items: center; gap: 0.5rem; visibility: hidden; opacity: 0; transition: opacity 0.2s;}
+.course-list li:hover .course-actions { visibility: visible; opacity: 1;}
+.btn-edit { background: none; border: none; cursor: pointer; font-size: 1rem;}
+.btn-delete { visibility: visible; opacity: 1;}
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1001;}
+.modal-content { background: white; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px;}
+.modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;}
+.course-list li, .module-header, .content-item { display: flex; justify-content: space-between; align-items: center;}
+.btn-delete { background-color: transparent; color: #dc3545; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; line-height: 24px; text-align: center; visibility: hidden; opacity: 0; transition: opacity 0.2s;}
 .course-list li:hover .btn-delete,
 .module-card:hover .module-header .btn-delete,
-.content-item:hover .btn-delete {
-  visibility: visible; /* Show on hover */
-  opacity: 1;
-}
-.btn-delete:hover {
-  background-color: #f8d7da;
-}
+.content-item:hover .btn-delete { visibility: visible; opacity: 1;}
+.btn-delete:hover { background-color: #f8d7da;}
 .main-grid { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: flex-start; }
 .course-list-panel .card { margin-bottom: 1rem; }
 .course-builder-panel .placeholder { text-align: center; padding: 4rem; color: #888; }
