@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     
-    <!-- NEW: Recommendations Section -->
+    <!-- Recommendations Section -->
     <div v-if="authStore.isStudent" class="recommendations-section">
       <h2>Recommended for You</h2>
       <div v-if="isLoadingRecs" class="loading">Generating recommendations...</div>
@@ -72,7 +72,6 @@ const fetchRecommendations = async () => {
     const response = await apiClient.get('/students/me/recommendations');
     recommendations.value = response.data;
   } catch (err) {
-    // Fail silently, it's not a critical error if recs don't load
     console.error("Could not load recommendations:", err);
   } finally {
     isLoadingRecs.value = false;
@@ -99,46 +98,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* --- NEW STYLES --- */
-.recommendations-section {
-  background: #f8f9fa;
-  padding: 2rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-}
-.recommendations-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-.rec-card {
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 5px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+.recommendations-section {background: #f8f9fa; padding: 2rem; border-radius: 8px; margin-bottom: 2rem;}
+.recommendations-grid { display: grid; grid-template-columns: 1fr; gap: 1rem;}
+.rec-card {background: #fff; border: 1px solid #dee2e6; border-radius: 5px; padding: 1rem; display: flex; align-items: center;gap: 1rem;}
 .rec-icon { font-size: 1.5rem; }
 .rec-info { flex-grow: 1; }
 .rec-title { font-weight: bold; display: block; }
 .rec-context { font-size: 0.85rem; color: #6c757d; }
-.btn-rec {
-  background-color: #6c757d;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-.divider {
-  border: none;
-  border-top: 1px solid #e9ecef;
-  margin: 2rem 0;
-}
-
-/* --- EXISTING STYLES (UNCHANGED) --- */
+.btn-rec {background-color: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; white-space: nowrap;}
+.divider { border: none; border-top: 1px solid #e9ecef; margin: 2rem 0;}
 .dashboard-container { max-width: 1200px; margin: 2rem auto; padding: 1rem; }
 .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
 .course-card { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
