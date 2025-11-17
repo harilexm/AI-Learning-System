@@ -33,8 +33,6 @@ const router = createRouter({
       name: 'register',
       component: RegisterView
     },
-
-    // PROTECTED ROUTES (BY ROLE)
     // Student Dashboard
     {
       path: '/dashboard',
@@ -74,8 +72,6 @@ const router = createRouter({
         // No 'allowedRoles' means any authenticated user can access it
       }
     },
-    
-    // ... (inside the routes array)
     {
       path: '/manage-courses',
       name: 'manage-courses',
@@ -85,8 +81,6 @@ const router = createRouter({
         allowedRoles: ['teacher', 'administrator'] // Protect this route
       }
     },
-    
-        // ... (inside the routes array)
     {
       path: '/courses/:courseId', // e.g., /courses/some-uuid-string
       name: 'course-details',
@@ -97,7 +91,6 @@ const router = createRouter({
         allowedRoles: ['student', 'teacher', 'administrator']
       }
     },
-        // ... (inside the routes array, probably after 'manage-courses')
     {
       path: '/courses/:courseId/progress',
       name: 'course-progress',
@@ -107,9 +100,6 @@ const router = createRouter({
         allowedRoles: ['teacher', 'administrator']
       }
     },
-    // --- THIS IS THE MISSING PIECE ---
-    // Add this route object to your `routes` array.
-    // A good place is after the 'course-details' route.
     {
       path: '/quiz/:contentId/take',
       name: 'quiz-player',
