@@ -51,7 +51,6 @@ const authStore = useAuthStore();
 </script>
 
 <style scoped>
-
 .home-container {max-width: 1200px; margin: 0 auto; padding: 2rem; color: #333;}
 .hero-section {text-align: center; padding: 4rem 1rem; background-color: #f8f9fa; border-radius: 8px; margin-bottom: 3rem;}
 h1 {font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; color: #2c3e50;}
