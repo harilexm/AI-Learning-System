@@ -1,8 +1,7 @@
-// frontend/src/stores/auth.js
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import axios from 'axios'; // Keep for public login/register calls
-import apiClient from '@/api'; // Import our new central client
+import axios from 'axios';
+import apiClient from '@/api';
 
 export const useAuthStore = defineStore('auth', () => {
   // State
