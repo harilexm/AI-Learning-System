@@ -67,7 +67,6 @@ onMounted(async () => {
   try {
     const response = await apiClient.get(`/quizzes/${contentId}`);
     quiz.value = response.data;
-    // Initialize studentAnswers object
     quiz.value.questions.forEach(q => studentAnswers.value[q.id] = null);
   } catch (err) {
     error.value = "Failed to load the quiz.";
