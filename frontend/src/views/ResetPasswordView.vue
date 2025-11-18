@@ -15,6 +15,7 @@
     </form>
   </div>
 </template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -27,6 +28,7 @@ const token = ref('');
 const message = ref('');
 const isError = ref(false);
 const isLoading = ref(false);
+
 onMounted(() => {
   token.value = route.query.token;
   if (!token.value) {
@@ -34,6 +36,7 @@ onMounted(() => {
     isError.value = true;
   }
 });
+
 const handleReset = async () => {
   if (password.value !== confirmPassword.value) {
     message.value = 'Passwords do not match.';
@@ -55,8 +58,8 @@ const handleReset = async () => {
   }
 };
 </script>
+
 <style scoped>
-/* You can share styles with LoginView */
 .container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
 .form { padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
 .message { margin-top: 1rem; text-align: center; }
