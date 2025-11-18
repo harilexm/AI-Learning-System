@@ -63,7 +63,6 @@ const handleRegister = async () => {
 
     successMessage.value = response.data.message;
 
-    // Clear form fields on success
     firstName.value = '';
     lastName.value = '';
     username.value = '';
@@ -81,80 +80,15 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-.register-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  background-color: #f0f2f5;
-  padding: 1rem;
-}
-.register-form {
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 100%;
-  max-width: 400px;
-}
-h2 {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  color: #333;
-}
-.form-group {
-  margin-bottom: 1.25rem;
-}
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #555;
-}
-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-input:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-button {
-  width: 100%;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #007bff;
-  color: white;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-button:hover {
-  background-color: #0056b3;
-}
-.error-message {
-  color: #dc3545;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-top: 1rem;
-  text-align: center;
-}
-.success-message {
-  color: #155724;
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-top: 1rem;
-  text-align: center;
-}
+.register-container {display: flex; justify-content: center; align-items: center; min-height: 80vh; background-color: #f0f2f5; padding: 1rem;}
+.register-form { padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); width: 100%; max-width: 400px; }
+h2 {margin-top: 0; margin-bottom: 1.5rem; text-align: center; color: #333;}
+.form-group { margin-bottom: 1.25rem;}
+label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #555;}
+input { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
+input:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);}
+button { width: 100%; padding: 0.75rem; border: none; border-radius: 4px; background-color: #007bff; color: white; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+button:hover { background-color: #0056b3; }
+.error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; text-align: center;}
+.success-message {color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; text-align: center;}
 </style>
