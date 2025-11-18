@@ -103,70 +103,18 @@ const showMessage = (msg, isErr = false) => {
 </script>
 
 <style scoped>
-.profile-container {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 1rem;
-}
-.card {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin-bottom: 2rem;
-}
-.info-card h2, .password-card h2 {
-  margin-top: 0;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 1rem;
-  margin-bottom: 1.5rem;
-}
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-.info-item label {
-  font-weight: bold;
-  color: #6c757d;
-  display: block;
-  margin-bottom: 0.25rem;
-}
-.info-item p {
-  margin: 0;
-  font-size: 1.1rem;
-}
-.info-item .roles {
-  text-transform: capitalize;
-}
-.form-group {
-  margin-bottom: 1.5rem;
-}
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.btn {
-  background-color: #007bff;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.message {
-  padding: 1rem;
-  border-radius: 4px;
-  text-align: center;
-  margin-top: 1rem;
-}
+.profile-container { max-width: 700px; margin: 2rem auto; padding: 1rem;}
+.card { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 2rem;}
+.info-card h2, .password-card h2 {margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 1rem; margin-bottom: 1.5rem;}
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;}
+.info-item label { font-weight: bold; color: #6c757d; display: block; margin-bottom: 0.25rem;}
+.info-item p { margin: 0; font-size: 1.1rem;}
+.info-item .roles {text-transform: capitalize;}
+.form-group { margin-bottom: 1.5rem;}
+label { display: block; margin-bottom: 0.5rem; font-weight: 500;}
+input { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px;}
+.btn { background-color: #007bff; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer;}
+.message { padding: 1rem; border-radius: 4px; text-align: center; margin-top: 1rem;}
 .message.error { background-color: #f8d7da; color: #721c24; }
 .message:not(.error) { background-color: #d4edda; color: #155724; }
 </style>
