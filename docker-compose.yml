@@ -45,9 +45,9 @@ services:
     # THIS IS THE SECURE WAY TO HANDLE SECRETS:
     # It sets the database password from an environment variable.
     environment:
-      - POSTGRES_PASSWORD=your_super_secret_db_password # <-- CHANGE THIS
+      - POSTGRES_PASSWORD=rppt # <-- CHANGE THIS
       - POSTGRES_USER=admin
-      - POSTGRES_DB=ai_learning_system
+      - POSTGRES_DB=user_management_system
     volumes:
       # This line creates a persistent volume to store your database data.
       # If you stop and restart your containers, your data will still be there.
