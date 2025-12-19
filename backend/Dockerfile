@@ -1,11 +1,12 @@
 # backend/Dockerfile
 
-# Use a slightly more complete python slim image
-FROM python:3.10-slim-buster
+# --- THIS IS THE FIX ---
+# Use the 'bullseye' version, which is a more modern and stable base than 'buster'
+FROM python:3.10-bullseye
 
-# Install system-level dependencies needed for building Python packages
+# Install system-level dependencies. This process is more reliable on bullseye.
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    gcc \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
