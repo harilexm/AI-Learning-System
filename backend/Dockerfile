@@ -1,21 +1,26 @@
-FROM python:3.10-slim
+# backend/Dockerfile
 
-# Set working directory in the container
+# Use a slightly more complete python slim image
+FROM python:3.10-slim-buster
+
+# Install system-level dependencies needed for building Python packages
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
 WORKDIR /app
 
-# Copy the requirements file into the container
+# Copy and install Python requirements
 COPY requirements.txt .
-
-# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your application code into the container
+# Copy the rest of the application code
 COPY . .
 
-# Expose the port that Gunicorn will run on
+# Expose the port
 EXPOSE 5000
 
-# Define the command to run your application
-# gunicorn will run the 'app' object inside your 'app.py' file
-# We bind it to 0.0.0.0 so it can be accessed from outside the container
+# Run the application
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

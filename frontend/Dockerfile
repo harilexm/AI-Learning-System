@@ -3,7 +3,9 @@
 # --- Stage 1: The Build Stage ---
 # Use an official Node.js image as the builder.
 # 'alpine' is a lightweight version.
-FROM node:18-alpine AS builder
+# frontend/Dockerfile
+
+FROM node:20-alpine AS builder
 
 # Set the working directory in the container
 WORKDIR /app
