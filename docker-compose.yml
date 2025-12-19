@@ -1,0 +1,58 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  # The Frontend Service (Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ail-frontend
+    ports:
+      # Map port 5173 on your local machine to port 80 inside the container
+      - "5173:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  # The Backend Service (Flask/Gunicorn)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ail-backend
+    ports:
+      # Map port 5000 on your local machine to port 5000 inside the container
+      - "5000:5000"
+    restart: unless-stopped
+    # THIS IS THE SECURE WAY TO HANDLE SECRETS:
+    # It reads your .env file from the backend directory and injects the
+    # variables into the container at runtime.
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+
+  # The Database Service (PostgreSQL)
+  db:
+    image: postgres:14-alpine
+    container_name: ail-postgres
+    ports:
+      # You can optionally expose the database port to your local machine for debugging
+      - "5432:5432"
+    restart: unless-stopped
+    # THIS IS THE SECURE WAY TO HANDLE SECRETS:
+    # It sets the database password from an environment variable.
+    environment:
+      - POSTGRES_PASSWORD=your_super_secret_db_password # <-- CHANGE THIS
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=ai_learning_system
+    volumes:
+      # This line creates a persistent volume to store your database data.
+      # If you stop and restart your containers, your data will still be there.
+      - postgres_data:/var/lib/postgresql/data
+
+# Define the persistent volume for the database
+volumes:
+  postgres_data:
