@@ -1,15 +1,11 @@
-// frontend/src/api/index.js
 import axios from 'axios';
-
-// Get the API base URL from the environment variable provided by Vite
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // Create a single, configured axios instance
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: 'http://localhost:5000/api',
 });
 
-// Use an interceptor to dynamically add the Authorization header
+// Use an interceptor to dynamically add the Authorization header to every request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
