@@ -40,6 +40,8 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://backend:5000/api
     container_name: ai_frontend_service
     restart: unless-stopped
     ports:
