@@ -8,7 +8,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: ail-frontend
+    image: 108782099959.dkr.ecr.ap-south-1.amazonaws.com/ai-frontend:latest
+    container_name: ai-frontend
     ports:
       # Map port 5173 on your local machine to port 80 inside the container
       - "5173:80"
@@ -21,7 +22,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: ail-backend
+    image: 108782099959.dkr.ecr.ap-south-1.amazonaws.com/ai-backend:latest
+    container_name: ai-backend
     ports:
       # Map port 5000 on your local machine to port 5000 inside the container
       - "5000:5000"
