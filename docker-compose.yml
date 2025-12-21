@@ -1,60 +1,54 @@
-# docker-compose.yml
+# docker-compose.yml in your project's root directory
 
 version: '3.8'
 
 services:
-  # The Frontend Service (Nginx)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    image: 108782099959.dkr.ecr.ap-south-1.amazonaws.com/ai-frontend:latest
-    container_name: ai-frontend
-    ports:
-      # Map port 5173 on your local machine to port 80 inside the container
-      - "5173:80"
+  # The PostgreSQL Database Service
+  db:
+    image: postgres:14-alpine
+    container_name: ai_postgres_db
     restart: unless-stopped
-    depends_on:
-      - backend
+    # Environment variables for the database
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: your_strong_password # <-- IMPORTANT: Change this to your actual password
+      POSTGRES_DB: ai_learning_system # <-- IMPORTANT: Use the correct DB name
+    volumes:
+      # This line creates a persistent volume to store your database data.
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # You can optionally expose the database port to your local machine for debugging with PgAdmin
+      - "5433:5432" # Use 5433 on your host to avoid conflicts with a local Postgres install
 
   # The Backend Service (Flask/Gunicorn)
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
-    image: 108782099959.dkr.ecr.ap-south-1.amazonaws.com/ai-backend:latest
-    container_name: ai-backend
+    container_name: ai_backend_service
+    restart: unless-stopped
+    # The 'env_file' securely injects your secrets from the .env file
+    env_file:
+      - ./backend/.env
     ports:
       # Map port 5000 on your local machine to port 5000 inside the container
       - "5000:5000"
-    restart: unless-stopped
-    # THIS IS THE SECURE WAY TO HANDLE SECRETS:
-    # It reads your .env file from the backend directory and injects the
-    # variables into the container at runtime.
-    env_file:
-      - ./backend/.env
     depends_on:
+      # This tells Docker to wait until the 'db' service is healthy before starting the backend
       - db
 
-  # The Database Service (PostgreSQL)
-  db:
-    image: postgres:14-alpine
-    container_name: ail-postgres
-    ports:
-      # You can optionally expose the database port to your local machine for debugging
-      - "5432:5432"
+  # The Frontend Service (Vue/Nginx)
+  frontend:
+    build:
+      context: ./frontend
+    container_name: ai_frontend_service
     restart: unless-stopped
-    # THIS IS THE SECURE WAY TO HANDLE SECRETS:
-    # It sets the database password from an environment variable.
-    environment:
-      - POSTGRES_PASSWORD=rppt # <-- CHANGE THIS
-      - POSTGRES_USER=admin
-      - POSTGRES_DB=user_management_system
-    volumes:
-      # This line creates a persistent volume to store your database data.
-      # If you stop and restart your containers, your data will still be there.
-      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Map port 8080 on your local machine to port 80 inside the container
+      - "8080:80"
+    depends_on:
+      - backend
 
 # Define the persistent volume for the database
 volumes:
   postgres_data:
+    driver: local
