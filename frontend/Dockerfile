@@ -1,12 +1,8 @@
-# frontend/Dockerfile
 
-# --- Stage 1: The Build Stage ---
-# Use an official Node.js image as the builder.
-# 'alpine' is a lightweight version.
-# frontend/Dockerfile
 
 FROM node:20-alpine AS builder
-
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 # Set the working directory in the container
 WORKDIR /app
 
