@@ -53,7 +53,7 @@ const handleRegister = async () => {
   successMessage.value = '';
 
   try {
-    const response = await axios.post('http://localhost:5000/api/auth/register', {
+    const response = await axios.post('/api/auth/register', {
       firstName: firstName.value,
       lastName: lastName.value,
       username: username.value,

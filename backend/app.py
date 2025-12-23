@@ -19,7 +19,8 @@ from models import (db, User, UserRole, Student, Teacher, Course, Module, Learni
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+allowed_origin = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+CORS(app, resources={r"/api/*": {"origins": allowed_origin}})
 
 # Configurations
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
@@ -28,9 +29,9 @@ app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY')
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME') or None # <-- FIX: Explicitly set to None if empty
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') or None # <-- FIX: Explicitly set to None if empty
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@example.com') # <-- FIX: Provide a default sender
 
 # Extensions Initialization
 db.init_app(app)
@@ -122,7 +123,9 @@ def forgot_password():
 
     if user:
         token = serializer.dumps(user.email, salt='password-reset-salt')
-        reset_url = f"http://localhost:5173/reset-password?token={token}"
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+        reset_url = f"{frontend_url}/reset-password?token={token}"
+        
         msg = Message("Password Reset Request", recipients=[user.email])
         msg.body = f"Please click the following link to reset your password:\n{reset_url}\n\nIf you did not request this, please ignore this email."
         try:

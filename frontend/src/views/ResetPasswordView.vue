@@ -47,7 +47,7 @@ const handleReset = async () => {
   isError.value = false;
   message.value = '';
   try {
-    const response = await axios.post('http://localhost:5000/api/auth/reset-password', { token: token.value, password: password.value });
+    const response = await axios.post('/api/auth/reset-password', { token: token.value, password: password.value });
     message.value = response.data.message + " Redirecting to login...";
     setTimeout(() => router.push('/login'), 3000);
   } catch (error) {

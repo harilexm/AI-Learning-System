@@ -30,7 +30,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import axios from 'axios';
+import apiClient from '@/api';
 
 // Props: The component receives the article text as a 'prop' from its parent
 const props = defineProps({
@@ -48,11 +48,6 @@ const messages = ref([
   { sender: 'bot', text: 'Hello! I am StudyBot. Ask me any questions you have about this article.' }
 ]);
 const messageArea = ref(null); // To control scrolling
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
-  headers: { Authorization: `Bearer ${authStore.token}` }
-});
 
 const sendMessage = async () => {
   if (!userInput.value.trim()) return;

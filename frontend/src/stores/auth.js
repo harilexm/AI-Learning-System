@@ -19,7 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(email, password) {
     try {
       // Login is a public route, so we can use the base axios instance
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post('/api/auth/login', {
         email,
         password,
       });

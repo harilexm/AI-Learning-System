@@ -22,7 +22,7 @@ const handleRequest = async () => {
   isLoading.value = true;
   message.value = '';
   try {
-    const response = await axios.post('http://localhost:5000/api/auth/forgot-password', { email: email.value });
+    const response = await axios.post('/api/auth/forgot-password', { email: email.value });
     message.value = response.data.message;
   } catch (error) {
     message.value = 'An error occurred. Please try again.';

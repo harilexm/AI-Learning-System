@@ -1,11 +1,10 @@
 import axios from 'axios';
 
-// Create a single, configured axios instance
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  // The only change is here: from 'http://localhost:5000/api' to '/api'
+  baseURL: '/api', 
 });
 
-// Use an interceptor to dynamically add the Authorization header to every request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
