@@ -363,9 +363,18 @@ def get_quiz_questions(content_id):
     sanitized_questions = [{k: v for k, v in q.items() if k != 'correct_answer_index'} for q in content.quiz_data.get('questions', [])]
     return jsonify({"quiz_id": str(content.id), "title": content.title, "questions": sanitized_questions})
 
+# backend/app.py
+
+# --- REPLACE this entire function in your file ---
+
 @app.route('/api/quizzes/<uuid:content_id>/submit', methods=['POST'])
 @roles_required('student')
 def submit_quiz(content_id):
+    """
+    Receives student answers, grades them, saves the attempt,
+    AND marks the quiz as 'completed' in the progress tracker.
+    This version uses the CORRECT column names.
+    """
     content = LearningContent.query.get_or_404(content_id)
     if content.type != 'quiz' or not content.quiz_data:
         return jsonify({"error": "This is not a valid quiz."}), 404
@@ -378,15 +387,53 @@ def submit_quiz(content_id):
     total = len(correct_answers)
     percentage = round((score / total) * 100, 2) if total > 0 else 0
 
-    previous_attempts = AssessmentAttempt.query.filter_by(student_id=student.id, learning_content_id=content_id).count()
+    # --- FIX #1: Use the correct column name 'learning_content_id' ---
+    previous_attempts = AssessmentAttempt.query.filter_by(
+        student_id=student.id, 
+        learning_content_id=content_id
+    ).count()
+    
+    new_attempt_number = previous_attempts + 1
+
+    # --- FIX #2: Use the correct column name 'learning_content_id' ---
     new_attempt = AssessmentAttempt(
-        learning_content_id=content_id, student_id=student.id,
-        attempt_number=previous_attempts + 1, score=percentage,
-        max_score=100.00, answers=student_answers
+        learning_content_id=content_id, 
+        student_id=student.id,
+        attempt_number=new_attempt_number, 
+        score=percentage,
+        max_score=100.00, 
+        answers=student_answers
     )
     db.session.add(new_attempt)
+
+    # This logic is correct and uses the correct 'content_id' for the progress table
+    progress_record = StudentContentProgress.query.filter_by(
+        student_id=student.id,
+        content_id=content_id
+    ).first()
+
+    if not progress_record:
+        new_progress = StudentContentProgress(
+            student_id=student.id,
+            content_id=content_id,
+            status='completed',
+            completed_at=datetime.datetime.utcnow()
+        )
+        db.session.add(new_progress)
+    elif progress_record.status != 'completed':
+        progress_record.status = 'completed'
+        progress_record.completed_at = datetime.datetime.utcnow()
+
     db.session.commit()
-    return jsonify({"message": "Quiz submitted successfully!", "score": percentage, "total_questions": total, "correct_answers": correct_answers, "student_answers": student_answers})
+    
+    return jsonify({
+        "message": "Quiz submitted successfully!", 
+        "score": percentage, 
+        "total_questions": total, 
+        "correct_answers": correct_answers, 
+        "student_answers": student_answers
+    })
+
 
 @app.route('/api/progress/<uuid:content_id>/complete', methods=['POST'])
 @jwt_required()
