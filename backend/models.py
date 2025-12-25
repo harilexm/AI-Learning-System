@@ -114,7 +114,7 @@ class AssessmentAttempt(db.Model):
     submitted_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
     student = db.relationship('Student', backref='quiz_attempts')
-    quiz = db.relationship('LearningContent', backref='attempts')
+    quiz = db.relationship('LearningContent', backref=db.backref('attempts', cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<AssessmentAttempt student={self.student_id} quiz={self.learning_content_id } score={self.score}>'
@@ -131,7 +131,7 @@ class StudentContentProgress(db.Model):
     last_accessed_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
     student = db.relationship('Student', backref='progress_records')
-    learning_content = db.relationship('LearningContent', backref='progress_records')
+    learning_content = db.relationship('LearningContent', backref=db.backref('progress_records', cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<Progress student={self.student_id} content={self.content_id} status={self.status}>'

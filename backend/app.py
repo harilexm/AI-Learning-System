@@ -536,25 +536,49 @@ def get_recommendations():
             
     return jsonify(recommendations)
 
+# backend/app.py
+
+# --- REPLACE this entire function in your file ---
+
 @app.route('/api/ai/generate-quiz', methods=['POST'])
 @roles_required('teacher', 'administrator')
 def generate_quiz_from_article():
-    if not openai.api_key: return jsonify({"error": "AI service is not configured."}), 503
+    if not openai.api_key: 
+        return jsonify({"error": "AI service is not configured."}), 503
     
     article_text = request.get_json().get('text')
     if not article_text or len(article_text) < 100:
         return jsonify({"error": "Article text must be at least 100 characters."}), 400
 
     prompt = [
-        {"role": "system", "content": "You are an expert educator. Generate a JSON object for a quiz with 3 multiple-choice questions from the text. Each question must have a unique 'id', 'text', three 'options', and the 'correct_answer_index' (0, 1, or 2)."},
+        {"role": "system", "content": "You are an expert educator. Generate a JSON object for a quiz with 3 multiple-choice questions from the text. Each question must have 'text', an array of three 'options', and the 'correct_answer_index' (0, 1, or 2). Do not include an 'id' field for the questions."},
         {"role": "user", "content": f"Article text: ```{article_text}```"}
     ]
     try:
-        completion = openai.chat.completions.create(model="gpt-3.5-turbo-1106", messages=prompt, response_format={"type": "json_object"}, temperature=0.5)
+        completion = openai.chat.completions.create(
+            model="gpt-3.5-turbo-1106", 
+            messages=prompt, 
+            response_format={"type": "json_object"}, 
+            temperature=0.5
+        )
         quiz_data = json.loads(completion.choices[0].message.content)
+        
         if 'questions' not in quiz_data or not isinstance(quiz_data.get('questions'), list):
             raise ValueError("Invalid 'questions' format from AI.")
+
+        # --- THIS IS THE FIX ---
+        # We now take control and assign our own stable IDs to the questions.
+        # This guarantees consistency throughout the system.
+        sanitized_questions = []
+        for q in quiz_data['questions']:
+            q['id'] = f"q{int(datetime.datetime.now().timestamp() * 1000)}_{len(sanitized_questions)}"
+            sanitized_questions.append(q)
+        
+        quiz_data['questions'] = sanitized_questions
+        # --- END OF FIX ---
+
         return jsonify(quiz_data)
+        
     except (json.JSONDecodeError, ValueError) as e:
         return jsonify({"error": f"AI generated invalid data: {e}"}), 500
     except Exception as e:
