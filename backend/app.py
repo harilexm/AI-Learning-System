@@ -19,7 +19,7 @@ from models import (db, User, UserRole, Student, Teacher, Course, Module, Learni
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 app = Flask(__name__)
-allowed_origin = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+allowed_origin = os.environ.get('FRONTEND_URL', 'http://localhost:8080')
 CORS(app, resources={r"/api/*": {"origins": allowed_origin}})
 
 # Configurations
