@@ -5,14 +5,12 @@ import datetime
 
 db = SQLAlchemy()
 
-# roles: user join table from the schema
 class UserRole(db.Model):
     __tablename__ = 'user_roles'
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), primary_key=True)
     role = db.Column(ENUM('student', 'teacher', 'administrator', name='role_name'), primary_key=True)
     granted_at = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
 
-# user model
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -29,7 +27,6 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
-# studnet Model
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -41,7 +38,6 @@ class Student(db.Model):
     def __repr__(self):
         return f'<Student {self.first_name} {self.last_name}>'
 
-# Teacher model
 class Teacher(db.Model):
     __tablename__ = 'teachers'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -54,7 +50,6 @@ class Teacher(db.Model):
     def __repr__(self):
         return f'<Teacher {self.first_name} {self.last_name}>'
 
-# Course model
 class Course(db.Model):
     __tablename__ = 'courses'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -69,7 +64,6 @@ class Course(db.Model):
     def __repr__(self):
         return f'<Course {self.title}>'
 
-# Module model
 class Module(db.Model):
     __tablename__ = 'modules'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -84,7 +78,6 @@ class Module(db.Model):
     def __repr__(self):
         return f'<Module {self.title}>'
     
-# LearningContent model
 class LearningContent(db.Model):
     __tablename__ = 'learning_content'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -101,7 +94,6 @@ class LearningContent(db.Model):
     def __repr__(self):
         return f'<LearningContent {self.title}>'
 
-# AssessmentAttempt model
 class AssessmentAttempt(db.Model):
     __tablename__ = 'assessment_attempts'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -119,7 +111,6 @@ class AssessmentAttempt(db.Model):
     def __repr__(self):
         return f'<AssessmentAttempt student={self.student_id} quiz={self.learning_content_id } score={self.score}>'
 
-# StudentContentProgress model
 class StudentContentProgress(db.Model):
     __tablename__ = 'student_content_progress'
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
