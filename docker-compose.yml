@@ -25,13 +25,6 @@ services:
   backend:
     build: ./backend
     container_name: ai_flask_backend
-    # We no longer need to map the port to the host for the backend
-    # because the frontend container will talk to it directly.
-    # ports:
-    #   - "5000:5000" 
-    # The volume mount is for development; for a clean production build, we remove it.
-    # volumes:
-    #   - ./backend:/app
     environment:
       - DATABASE_URL=postgresql://postgres:rppt@db:5432/user_management_system
       - FRONTEND_URL=http://localhost:8080 
@@ -43,7 +36,7 @@ services:
       - MAIL_USERNAME=
       - MAIL_PASSWORD=
     depends_on:
-      - db # The backend only needs to wait for the database
+      - db
     restart: unless-stopped
   
   frontend:
