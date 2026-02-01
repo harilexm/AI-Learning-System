@@ -29,9 +29,9 @@ app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY')
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME') or None # <-- FIX: Explicitly set to None if empty
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') or None # <-- FIX: Explicitly set to None if empty
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@example.com') # <-- FIX: Provide a default sender
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME') or None
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') or None
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@example.com')
 
 # Extensions Initialization
 db.init_app(app)
@@ -133,7 +133,7 @@ def forgot_password():
         except Exception as e:
             print(f"Failed to send email: {e}") # Log error but don't expose to user
     
-    # SECURITY: Always return a generic success message
+    # SECURITY: return a generic success message
     return jsonify({"message": "If an account with that email exists, a password reset link has been sent."})
 
 @app.route('/api/auth/reset-password', methods=['POST'])
@@ -181,7 +181,7 @@ def change_password():
     db.session.commit()
     return jsonify({"message": "Password updated successfully."})
 
-# --- Admin User Management ---
+# Admin User Management
 @app.route('/api/admin/users', methods=['GET'])
 @roles_required('administrator')
 def get_all_users():
@@ -363,10 +363,6 @@ def get_quiz_questions(content_id):
     sanitized_questions = [{k: v for k, v in q.items() if k != 'correct_answer_index'} for q in content.quiz_data.get('questions', [])]
     return jsonify({"quiz_id": str(content.id), "title": content.title, "questions": sanitized_questions})
 
-# backend/app.py
-
-# --- REPLACE this entire function in your file ---
-
 @app.route('/api/quizzes/<uuid:content_id>/submit', methods=['POST'])
 @roles_required('student')
 def submit_quiz(content_id):
@@ -387,15 +383,12 @@ def submit_quiz(content_id):
     total = len(correct_answers)
     percentage = round((score / total) * 100, 2) if total > 0 else 0
 
-    # --- FIX #1: Use the correct column name 'learning_content_id' ---
     previous_attempts = AssessmentAttempt.query.filter_by(
         student_id=student.id, 
         learning_content_id=content_id
     ).count()
     
     new_attempt_number = previous_attempts + 1
-
-    # --- FIX #2: Use the correct column name 'learning_content_id' ---
     new_attempt = AssessmentAttempt(
         learning_content_id=content_id, 
         student_id=student.id,
@@ -406,7 +399,6 @@ def submit_quiz(content_id):
     )
     db.session.add(new_attempt)
 
-    # This logic is correct and uses the correct 'content_id' for the progress table
     progress_record = StudentContentProgress.query.filter_by(
         student_id=student.id,
         content_id=content_id
@@ -536,9 +528,6 @@ def get_recommendations():
             
     return jsonify(recommendations)
 
-# backend/app.py
-
-# --- REPLACE this entire function in your file ---
 
 @app.route('/api/ai/generate-quiz', methods=['POST'])
 @roles_required('teacher', 'administrator')
@@ -566,16 +555,12 @@ def generate_quiz_from_article():
         if 'questions' not in quiz_data or not isinstance(quiz_data.get('questions'), list):
             raise ValueError("Invalid 'questions' format from AI.")
 
-        # --- THIS IS THE FIX ---
-        # We now take control and assign our own stable IDs to the questions.
-        # This guarantees consistency throughout the system.
         sanitized_questions = []
         for q in quiz_data['questions']:
             q['id'] = f"q{int(datetime.datetime.now().timestamp() * 1000)}_{len(sanitized_questions)}"
             sanitized_questions.append(q)
         
         quiz_data['questions'] = sanitized_questions
-        # --- END OF FIX ---
 
         return jsonify(quiz_data)
         
