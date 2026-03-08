@@ -545,7 +545,7 @@ def generate_quiz_from_article():
     ]
     try:
         completion = openai.chat.completions.create(
-            model="gpt-3.5-turbo-1106", 
+            model="gpt-4o-mini", 
             messages=prompt, 
             response_format={"type": "json_object"}, 
             temperature=0.5
@@ -583,9 +583,10 @@ def handle_chatbot_query():
     user_prompt = f"Article:\n--- START ---\n{article_text}\n--- END ---\n\nStudent's question: \"{question}\""
     
     try:
-        completion = openai.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}], temperature=0.3, max_tokens=200)
+        completion = openai.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}], temperature=0.3, max_tokens=200)
         return jsonify({"answer": completion.choices[0].message.content})
     except Exception as e:
+        print(f"[CHATBOT ERROR] {type(e).__name__}: {e}")
         return jsonify({"error": f"An AI communication error occurred: {e}"}), 500
 
 if __name__ == '__main__':
