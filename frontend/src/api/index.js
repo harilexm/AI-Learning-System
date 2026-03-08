@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  // The only change is here: from 'http://localhost:5000/api' to '/api'
   baseURL: '/api', 
 });
 
