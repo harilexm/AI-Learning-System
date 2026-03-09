@@ -91,12 +91,41 @@ def delete_user(user_id):
         return jsonify({"error": "Cannot delete your own account"}), 400
     user = User.query.get_or_404(user_id)
     try:
+        from ..models import (DiscussionReply, DiscussionPost, TeacherRemark,
+                              ChatHistory, StudyPlan, AssessmentAttempt,
+                              StudentContentProgress, Enrollment, LearningProfile)
+
+        # Delete discussion replies and posts by this user
+        DiscussionReply.query.filter_by(user_id=user.id).delete()
+        # Delete replies on posts owned by this user, then the posts
+        for post in DiscussionPost.query.filter_by(user_id=user.id).all():
+            DiscussionReply.query.filter_by(post_id=post.id).delete()
+        DiscussionPost.query.filter_by(user_id=user.id).delete()
+
+        # If user is a student, clean up student-related records
+        if user.student_profile:
+            sid = user.student_profile.id
+            TeacherRemark.query.filter_by(student_id=sid).delete()
+            ChatHistory.query.filter_by(student_id=sid).delete()
+            StudyPlan.query.filter_by(student_id=sid).delete()
+            AssessmentAttempt.query.filter_by(student_id=sid).delete()
+            StudentContentProgress.query.filter_by(student_id=sid).delete()
+            Enrollment.query.filter_by(student_id=sid).delete()
+            LearningProfile.query.filter_by(student_id=sid).delete()
+
+        # If user is a teacher, clean up teacher-related records
+        if user.teacher_profile:
+            tid = user.teacher_profile.id
+            TeacherRemark.query.filter_by(teacher_id=tid).delete()
+            # Unlink courses (set created_by to NULL instead of deleting courses)
+            Course.query.filter_by(created_by_teacher_id=tid).update({"created_by_teacher_id": None})
+
         db.session.delete(user)
         db.session.commit()
         return jsonify({"message": "User deleted successfully"}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "Failed to delete user due to related records."}), 400
+        return jsonify({"error": f"Failed to delete user: {str(e)}"}), 400
 
 @users_bp.route('/students/me/learning-profile', methods=['GET'])
 @roles_required('student')
