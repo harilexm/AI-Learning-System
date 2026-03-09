@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, request
 from collections import Counter
 from flask_jwt_extended import jwt_required, get_jwt_identity
-import openai
+from flask import current_app
+from openai import OpenAI
 import json
 from ..extensions import db
 from ..models import Student, StudentContentProgress, LearningContent, StudyPlan, AssessmentAttempt, ChatHistory, LearningProfile
@@ -64,8 +65,13 @@ def generate_study_plan():
     {{"days": [{{"day": 1, "focus": "topic", "activities": ["activity1"], "duration_minutes": 30}}]}}
     """
 
+    api_key = current_app.config.get('OPENAI_API_KEY')
+    if not api_key:
+        return jsonify({"error": "AI service is not configured."}), 503
+    client = OpenAI(api_key=api_key)
+
     try:
-        completion = openai.chat.completions.create(
+        completion = client.chat.completions.create(
             model="gpt-3.5-turbo-1106",
             messages=[{"role": "system", "content": "You are an educational planning expert."}, {"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
@@ -82,7 +88,9 @@ def generate_study_plan():
 @ai_bp.route('/ai/generate-quiz', methods=['POST'])
 @roles_required('teacher', 'administrator')
 def generate_quiz_from_article():
-    if not openai.api_key: return jsonify({"error": "AI service is not configured."}), 503
+    api_key = current_app.config.get('OPENAI_API_KEY')
+    if not api_key: return jsonify({"error": "AI service is not configured."}), 503
+    client = OpenAI(api_key=api_key)
     
     article_text = request.get_json().get('text')
     if not article_text or len(article_text) < 100:
@@ -93,7 +101,7 @@ def generate_quiz_from_article():
         {"role": "user", "content": f"Article text: ```{article_text}```"}
     ]
     try:
-        completion = openai.chat.completions.create(model="gpt-3.5-turbo-1106", messages=prompt, response_format={"type": "json_object"}, temperature=0.5)
+        completion = client.chat.completions.create(model="gpt-3.5-turbo-1106", messages=prompt, response_format={"type": "json_object"}, temperature=0.5)
         quiz_data = json.loads(completion.choices[0].message.content)
         if 'questions' not in quiz_data or not isinstance(quiz_data.get('questions'), list):
             raise ValueError("Invalid 'questions' format from AI.")
@@ -106,7 +114,9 @@ def generate_quiz_from_article():
 @ai_bp.route('/ai/chatbot', methods=['POST'])
 @roles_required('student')
 def handle_chatbot_query():
-    if not openai.api_key: return jsonify({"error": "AI service is not configured."}), 503
+    api_key = current_app.config.get('OPENAI_API_KEY')
+    if not api_key: return jsonify({"error": "AI service is not configured."}), 503
+    client = OpenAI(api_key=api_key)
 
     data = request.get_json()
     question, article_text = data.get('question'), data.get('context')
@@ -129,7 +139,7 @@ def handle_chatbot_query():
             
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}] + history + [{"role": "user", "content": question}]
         
-        completion = openai.chat.completions.create(model="gpt-3.5-turbo", messages=messages, temperature=0.3, max_tokens=200)
+        completion = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, temperature=0.3, max_tokens=200)
         bot_response = completion.choices[0].message.content
         
         if student_model:
