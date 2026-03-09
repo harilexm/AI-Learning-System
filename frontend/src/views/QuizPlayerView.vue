@@ -60,6 +60,8 @@ const results = ref(null);
 const isLoading = ref(true);
 const error = ref('');
 
+
+
 onMounted(async () => {
   const contentId = route.params.contentId;
   try {

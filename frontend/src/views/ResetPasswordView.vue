@@ -19,7 +19,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import apiClient from '@/api';
 const route = useRoute();
 const router = useRouter();
 const password = ref('');
@@ -47,7 +47,7 @@ const handleReset = async () => {
   isError.value = false;
   message.value = '';
   try {
-    const response = await axios.post('/api/auth/reset-password', { token: token.value, password: password.value });
+    const response = await apiClient.post('/auth/reset-password', { token: token.value, password: password.value });
     message.value = response.data.message + " Redirecting to login...";
     setTimeout(() => router.push('/login'), 3000);
   } catch (error) {

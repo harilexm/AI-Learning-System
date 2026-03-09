@@ -83,6 +83,7 @@ const progressData = ref([]);
 const performanceData = ref([]); // state to hold the quiz performance data
 
 
+
 // ENHANCED DATA FETCHING
 const fetchAnalyticsData = async () => {
   const courseId = route.params.courseId;

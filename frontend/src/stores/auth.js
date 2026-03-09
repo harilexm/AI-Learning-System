@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import axios from 'axios';
 import apiClient from '@/api';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -19,7 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(email, password) {
     try {
       // Login is a public route, so we can use the base axios instance
-      const response = await axios.post('/api/auth/login', {
+      const response = await apiClient.post('/auth/login', {
         email,
         password,
       });
@@ -27,10 +26,10 @@ export const useAuthStore = defineStore('auth', () => {
       const newToken = response.data.access_token;
       token.value = newToken;
       localStorage.setItem('token', newToken);
-      
+
       // After getting the token, immediately fetch the user's profile
       await fetchProfile();
-      
+
       return 'success';
     } catch (error) {
       logout();

@@ -38,7 +38,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import apiClient from '@/api';
 
 const firstName = ref('');
 const lastName = ref('');
@@ -53,7 +53,7 @@ const handleRegister = async () => {
   successMessage.value = '';
 
   try {
-    const response = await axios.post('/api/auth/register', {
+    const response = await apiClient.post('/auth/register', {
       firstName: firstName.value,
       lastName: lastName.value,
       username: username.value,

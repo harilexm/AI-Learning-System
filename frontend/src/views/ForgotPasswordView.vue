@@ -14,7 +14,7 @@
 </template>
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import apiClient from '@/api';
 const email = ref('');
 const message = ref('');
 const isLoading = ref(false);
@@ -22,7 +22,7 @@ const handleRequest = async () => {
   isLoading.value = true;
   message.value = '';
   try {
-    const response = await axios.post('/api/auth/forgot-password', { email: email.value });
+    const response = await apiClient.post('/auth/forgot-password', { email: email.value });
     message.value = response.data.message;
   } catch (error) {
     message.value = 'An error occurred. Please try again.';

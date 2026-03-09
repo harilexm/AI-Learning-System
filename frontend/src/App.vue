@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from './stores/auth';
 import { useRouter } from 'vue-router';
+import ChatbotWidget from './components/ChatbotWidget.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -32,9 +33,14 @@ const handleLogout = () => {
         
         <template v-if="authStore.isAuthenticated">
           <RouterLink to="/profile">My Profile</RouterLink>
-          <RouterLink to="/dashboard">Dashboard</RouterLink>
 
-          <RouterLink v-if="authStore.isTeacher || authStore.isAdmin" to="/manage-courses">
+          <!-- Role-aware dashboard links -->
+          <RouterLink v-if="authStore.isAdmin" to="/admin">Admin Panel</RouterLink>
+          <RouterLink v-if="authStore.isTeacher" to="/teacher-dashboard">Teacher Dashboard</RouterLink>
+          <RouterLink v-if="authStore.isStudent" to="/dashboard">My Learning</RouterLink>
+          <RouterLink v-if="authStore.isStudent" to="/my-progress">My Progress</RouterLink>
+
+          <RouterLink v-if="authStore.isTeacher" to="/manage-courses">
           Manage Courses
           </RouterLink>
           <a @click="handleLogout" href="#" class="logout-link">Logout</a>
@@ -45,6 +51,7 @@ const handleLogout = () => {
     <main class="main-content">
       <RouterView />
     </main>
+    <ChatbotWidget />
   </div>
 </template>
 

@@ -3,11 +3,6 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import { useAuthStore } from '@/stores/auth'
-import axios from 'axios';
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
-});
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,9 +33,19 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: () => import('../views/DashboardView.vue'),
-      meta: { 
+      meta: {
         requiresAuth: true,
-        allowedRoles: ['student', 'teacher', 'administrator'] // Anyone logged in can see a basic dashboard
+        allowedRoles: ['student'] // Only students see the Course Library dashboard
+      }
+    },
+    // Student Progress
+    {
+      path: '/my-progress',
+      name: 'my-progress',
+      component: () => import('../views/LearningHistoryView.vue'),
+      meta: {
+        requiresAuth: true,
+        allowedRoles: ['student']
       }
     },
     // Teacher Dashboard
@@ -48,7 +53,7 @@ const router = createRouter({
       path: '/teacher-dashboard',
       name: 'teacher-dashboard',
       component: () => import('../views/TeacherDashboardView.vue'),
-      meta: { 
+      meta: {
         requiresAuth: true,
         allowedRoles: ['teacher', 'administrator'] // Only Teachers and Admins
       }
@@ -58,7 +63,7 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('../views/AdminDashboardView.vue'),
-      meta: { 
+      meta: {
         requiresAuth: true,
         allowedRoles: ['administrator'] // Strictly Admins only
       }
@@ -76,7 +81,7 @@ const router = createRouter({
       path: '/manage-courses',
       name: 'manage-courses',
       component: () => import('../views/CourseManagementView.vue'),
-      meta: { 
+      meta: {
         requiresAuth: true,
         allowedRoles: ['teacher', 'administrator'] // Protect this route
       }
@@ -85,9 +90,27 @@ const router = createRouter({
       path: '/courses/:courseId', // e.g., /courses/some-uuid-string
       name: 'course-details',
       component: () => import('../views/CourseDetailView.vue'),
-      meta: { 
+      meta: {
         requiresAuth: true,
         // Accessible by anyone logged in, as they might want to browse
+        allowedRoles: ['student', 'teacher', 'administrator']
+      }
+    },
+    {
+      path: '/courses/:courseId/study-plan',
+      name: 'course-study-plan',
+      component: () => import('../views/StudyPlanView.vue'),
+      meta: {
+        requiresAuth: true,
+        allowedRoles: ['student']
+      }
+    },
+    {
+      path: '/courses/:courseId/discussions',
+      name: 'course-discussions',
+      component: () => import('../views/CourseDiscussionView.vue'),
+      meta: {
+        requiresAuth: true,
         allowedRoles: ['student', 'teacher', 'administrator']
       }
     },
@@ -95,7 +118,16 @@ const router = createRouter({
       path: '/courses/:courseId/progress',
       name: 'course-progress',
       component: () => import('../views/CourseProgressView.vue'),
-      meta: { 
+      meta: {
+        requiresAuth: true,
+        allowedRoles: ['teacher', 'administrator']
+      }
+    },
+    {
+      path: '/students/:studentId',
+      name: 'student-detail',
+      component: () => import('../views/StudentDetailView.vue'),
+      meta: {
         requiresAuth: true,
         allowedRoles: ['teacher', 'administrator']
       }
@@ -104,7 +136,7 @@ const router = createRouter({
       path: '/quiz/:contentId/take',
       name: 'quiz-player',
       component: () => import('../views/QuizPlayerView.vue'),
-      meta: { 
+      meta: {
         requiresAuth: true,
         allowedRoles: ['student'] // Only students should be taking quizzes
       }
@@ -119,9 +151,13 @@ const router = createRouter({
       name: 'reset-password',
       component: () => import('../views/ResetPasswordView.vue')
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('../views/NotFoundView.vue')
+    },
   ]
 })
-
 
 
 // ADVANCED NAVIGATION GUARD
@@ -129,7 +165,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const isAuthenticated = authStore.isAuthenticated;
-  
+
   // Try to fetch profile if a token exists but user info is missing (e.g., on page refresh)
   if (isAuthenticated && !authStore.user) {
     await authStore.fetchProfile();
@@ -143,7 +179,7 @@ router.beforeEach(async (to, from, next) => {
   if (requiresAuth && !isAuthenticated) {
     return next({ name: 'login' }); // Redirect to login page
   }
-  
+
   // If route requires a specific role and user does not have it
   if (allowedRoles && allowedRoles.length > 0) {
     const isAuthorized = userRoles.some(role => allowedRoles.includes(role));

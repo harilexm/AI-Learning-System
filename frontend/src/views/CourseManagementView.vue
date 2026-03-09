@@ -275,7 +275,7 @@ const handleCreateCourse = async () => {
 
 const handleAddModule = async () => {
   const nextOrder = (selectedCourse.value.modules.length || 0) + 1;
-  const payload = { ...newModule.value, order: nextOrder };
+  const payload = { ...newModule.value, moduleOrder: nextOrder };
   try {
     await apiClient.post(`/courses/${selectedCourse.value.id}/modules`, payload);
     showApiMessage('Module added successfully.');
@@ -289,16 +289,28 @@ const handleAddModule = async () => {
 const handleAddContent = async (moduleId) => {
   const module = selectedCourse.value.modules.find(m => m.id === moduleId);
   const nextOrder = (module.learning_contents.length || 0) + 1;
-  const payload = { ...newContent.value[moduleId], order: nextOrder };
+  const contentData = newContent.value[moduleId];
 
-  if (payload.type === 'quiz' && payload.quiz_data.questions.length === 0) {
+  if (contentData.type === 'quiz' && contentData.quiz_data.questions.length === 0) {
       showApiMessage('A quiz must have at least one question before saving.', true);
       return;
   }
+
+  // Build the payload with the field names expected by the backend
+  const payload = {
+    title: contentData.title,
+    type: contentData.type,
+    contentOrder: nextOrder,
+    contentUrl: contentData.url || null,
+    contentBody: contentData.body || null,
+    quizData: contentData.type === 'quiz' ? contentData.quiz_data : null,
+    tags: contentData.tags || null
+  };
+
   try {
     await apiClient.post(`/modules/${moduleId}/content`, payload);
     showApiMessage('Content added successfully.');
-    newContent.value[moduleId] = { title: '', type: 'video', url: '', body: '', quiz_data: { questions: [] } };
+    newContent.value[moduleId] = { title: '', type: 'video', url: '', body: '', quiz_data: { questions: [] }, tags: '' };
     await selectCourse(selectedCourse.value.id);
   } catch (err) { 
     handleApiError(err, 'Failed to add content.'); 

@@ -14,7 +14,17 @@
     
     <!-- Success State -->
     <div v-else-if="course" class="course-content">
-      <h1 class="course-title">{{ course.title }}</h1>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem;">
+        <h1 class="course-title">{{ course.title }}</h1>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <RouterLink :to="{ name: 'course-discussions', params: { courseId: course.id } }" class="btn-discussions">
+            Discussions
+          </RouterLink>
+          <RouterLink v-if="authStore.isStudent" :to="{ name: 'course-study-plan', params: { courseId: course.id } }" class="btn-study-plan">
+            Generate Study Plan
+          </RouterLink>
+        </div>
+      </div>
       <p class="course-description">{{ course.description }}</p>
       
       <!-- Loop through Modules -->
@@ -54,7 +64,7 @@
               </template>
             </div>
             <div v-if="content.type === 'article' && expandedArticles[content.id]" class="article-body">
-              <div v-html="content.body"></div>
+              <div v-html="sanitize(content.body)"></div>
               <ChatbotWidget :article-context="content.body" />
             </div>
           </li>
@@ -73,6 +83,7 @@ import { useRoute, RouterLink } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/api';
 import ChatbotWidget from '@/components/ChatbotWidget.vue';
+import DOMPurify from 'dompurify';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -84,6 +95,8 @@ const expandedArticles = ref({});
 const toggleArticle = (contentId) => {
   expandedArticles.value[contentId] = !expandedArticles.value[contentId];
 };
+
+const sanitize = (html) => DOMPurify.sanitize(html);
 
 const fetchCourseDetails = async () => {
   const courseId = route.params.courseId;
@@ -135,7 +148,11 @@ onMounted(fetchCourseDetails);
 .article-body {flex-basis: 100%; margin-top: 1rem; padding: 1.5rem; background-color: #f8f9fa; border-radius: 5px; border: 1px solid #e9ecef; line-height: 1.6;}
 .content-item {flex-wrap: wrap;}
 .course-title { font-size: 2.5rem; margin-bottom: 0.5rem; color: #2c3e50; }
-.course-description { font-size: 1.1rem; color: #6c757d; margin-bottom: 3rem; }
+.btn-study-plan { background: linear-gradient(135deg, #6f42c1, #007bff); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+.btn-study-plan:hover { transform: translateY(-2px); }
+.btn-discussions { background: linear-gradient(135deg, #20c997, #17a2b8); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+.btn-discussions:hover { transform: translateY(-2px); }
+.course-description { font-size: 1.1rem; color: #6c757d; margin-bottom: 3rem; margin-top: 1rem; }
 .module-container { background: #fff; border-radius: 8px; padding: 1.5rem 2rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 .module-container h2 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
 .module-description { font-style: italic; color: #6c757d; }
