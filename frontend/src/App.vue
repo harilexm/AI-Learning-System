@@ -2,7 +2,6 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from './stores/auth';
 import { useRouter } from 'vue-router';
-import ChatbotWidget from './components/ChatbotWidget.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -51,7 +50,6 @@ const handleLogout = () => {
     <main class="main-content">
       <RouterView />
     </main>
-    <ChatbotWidget />
   </div>
 </template>
 
