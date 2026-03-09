@@ -3,7 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..extensions import db
 from ..models import LearningContent, Student, AssessmentAttempt
 from ..utils.decorators import roles_required
-import openai
+from flask import current_app
+from openai import OpenAI
 import json
 
 quizzes_bp = Blueprint('quizzes', __name__, url_prefix='/api')
@@ -43,7 +44,9 @@ def submit_quiz(content_id):
     db.session.commit()
 
     feedback = None
-    if percentage < 100 and getattr(openai, 'api_key', None):
+    api_key = current_app.config.get('OPENAI_API_KEY')
+    if percentage < 100 and api_key:
+        client = OpenAI(api_key=api_key)
         wrong_questions = []
         for q in content.quiz_data['questions']:
             q_id = str(q['id'])
@@ -58,7 +61,7 @@ def submit_quiz(content_id):
         if wrong_questions:
             try:
                 prompt = f"A student took a quiz and got these questions wrong: {json.dumps(wrong_questions)}. Provide a brief, encouraging 1-2 sentence explanation for each correct answer."
-                completion = openai.chat.completions.create(
+                completion = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[{"role": "system", "content": "You are a helpful tutor. Be very concise."}, {"role": "user", "content": prompt}],
                     temperature=0.7, max_tokens=150
