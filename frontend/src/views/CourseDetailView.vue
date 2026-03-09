@@ -65,7 +65,9 @@
             </div>
             <div v-if="content.type === 'article' && expandedArticles[content.id]" class="article-body">
               <div v-html="sanitize(content.body)"></div>
-              <ChatbotWidget :article-context="content.body" />
+              <div style="margin-top: 1rem;">
+                <button v-if="authStore.isStudent" @click="openChatbot(content.body)" class="btn-ask-bot">🤖 Ask StudyBot about this article</button>
+              </div>
             </div>
           </li>
         </ul>
@@ -74,6 +76,9 @@
         </div>
       </div>
     </div>
+    
+    <!-- Single Chatbot Instance for the course detail page -->
+    <ChatbotWidget ref="chatbotRef" />
   </div>
 </template>
 
@@ -91,6 +96,13 @@ const course = ref(null);
 const isLoading = ref(true);
 const error = ref('');
 const expandedArticles = ref({});
+const chatbotRef = ref(null);
+
+const openChatbot = (text) => {
+  if (chatbotRef.value) {
+    chatbotRef.value.setContext(text);
+  }
+};
 
 const toggleArticle = (contentId) => {
   expandedArticles.value[contentId] = !expandedArticles.value[contentId];
@@ -169,4 +181,6 @@ onMounted(fetchCourseDetails);
 .btn-complete:hover { background-color: #0056b3; }
 .status-completed { color: #28a745; font-weight: bold; padding: 0.5rem 1rem; }
 .btn-quiz { background-color: #17a2b8; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: 500; text-decoration: none; }
+.btn-ask-bot { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+.btn-ask-bot:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
 </style>
