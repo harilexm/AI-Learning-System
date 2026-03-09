@@ -56,10 +56,10 @@ const messagesContainer = ref(null);
 const setContext = (text) => {
   articleContext.value = text;
   isOpen.value = true;
-  messages.value.push({
+  messages.value = [{
     role: 'bot',
-    content: 'Article loaded! Ask me anything about it.'
-  });
+    content: 'Article loaded! Ask me anything about it. I will only answer questions based on this specific article.'
+  }];
 };
 
 const scrollToBottom = async () => {
@@ -78,10 +78,17 @@ const sendMessage = async () => {
   isTyping.value = true;
   scrollToBottom();
 
+  if (!articleContext.value) {
+    messages.value.push({ role: 'bot', content: 'Please open an article and click "Ask StudyBot about this article" first.' });
+    isTyping.value = false;
+    scrollToBottom();
+    return;
+  }
+
   try {
     const response = await apiClient.post('/ai/chatbot', {
       question: question,
-      context: articleContext.value || 'No specific article loaded. Please help with general study questions.'
+      context: articleContext.value
     });
     messages.value.push({ role: 'bot', content: response.data.answer });
   } catch (err) {
