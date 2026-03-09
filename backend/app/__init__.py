@@ -13,9 +13,6 @@ def create_app():
     cors_origin = os.environ.get("CORS_ORIGIN", "http://localhost:5173")
     CORS(app, resources={r"/*": {"origins": cors_origin}})
 
-    # Initialize OpenAI API key
-    openai.api_key = app.config.get('OPENAI_API_KEY')
-
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
