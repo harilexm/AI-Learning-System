@@ -1,9 +1,12 @@
+import os
 from getpass import getpass
-from app import app, db, bcrypt
-from models import User, Teacher, UserRole
+from app import create_app
+from app.extensions import db, bcrypt
+from app.models import User, Teacher, UserRole
 from sqlalchemy.exc import IntegrityError
 
 def create_admin():
+    app = create_app()
     with app.app_context():
         try:
             username = input("Enter admin username: ")
@@ -19,20 +22,20 @@ def create_admin():
                 print("Error: Passwords do not match.")
                 return
 
-            # get names
+            # Get name for the teacher profile
             first_name = input("Enter first name: ")
             last_name = input("Enter last name: ")
             # Hash the password
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-            # Create admin
+            # Create the user
             admin_user = User(
                 username=username,
                 email=email,
                 password_hash=hashed_password
             )
             db.session.add(admin_user)
-            db.session.flush() # Get user ID
-            # Create the teacher/admin profile
+            db.session.flush() # Get the user ID
+            # Create the associated teacher/admin profile
             admin_profile = Teacher(
                 user_id=admin_user.id,
                 first_name=first_name,
