@@ -2,9 +2,8 @@
 
 This repository contains a full-stack web application for an AI Learning System.  
 
-**Frontend**: built with Vue.js 
-
-**backend**: Python API  along with configuration for local development using Docker.
+**Frontend**: Built with Vue.js, Vite, and Pinia.  
+**Backend**: Python API built with Flask, SQLAlchemy, and PostgreSQL.
 
 The system is designed to serve AI-related learning content, models, or curriculum modules with an interactive user interface.
 
@@ -13,18 +12,17 @@ The system is designed to serve AI-related learning content, models, or curricul
 ## -> Features
 
 **Backend**
-- REST API built with Python (Flask/FastAPI/Django – adjust based on your code)
+- REST API built with Python (Flask)
+- PostgreSQL database integration
+- Authentication using JWT
 - Endpoints for handling user data, courses, or AI model interactions
-- Model inference logic or AI service integration
+- Model inference logic / AI service integration
 
 **Frontend**
 - Vue.js UI for browsing content, taking quizzes, or running demos
 - User authentication pages (login, register)
 - Dynamic views for AI learning modules
-
-**DevOps**
-- Containerized deployment using Docker Compose
-- Separate services for frontend and backend
+- State management via Pinia
 
 ---
 
@@ -32,10 +30,9 @@ The system is designed to serve AI-related learning content, models, or curricul
 
 Before running locally, ensure you have:
 
-- **Docker** (latest version)
-- **Docker Compose**
-- Node.js & npm (for frontend dev without Docker)
-- Python 3.x (for backend dev without Docker)
+- **Node.js** (v20+ or v22+) & **npm**
+- **Python 3.x**
+- **PostgreSQL** (running locally or accessible via URL)
 
 ---
 
@@ -45,5 +42,54 @@ Before running locally, ensure you have:
 
 ```bash
 git clone https://github.com/harilexm/AILearningSystem.git
-
 cd AILearningSystem
+```
+
+### 2. Backend Setup
+
+The backend is a Flask application located in the `backend` directory.
+
+```bash
+cd backend
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup environment variables
+cp .env.example .env
+```
+
+Make sure to edit the `.env` file to include your PostgreSQL connection URL and other required keys.
+
+```bash
+# Run database migrations (if applicable)
+flask db upgrade
+
+# Run the development server
+python run.py
+```
+The backend API will be available at `http://localhost:5000`.
+
+### 3. Frontend Setup
+
+The frontend is a Vue 3 application built with Vite located in the `frontend` directory.
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
+```
+The frontend application will be accessible at the URL provided by Vite (usually `http://localhost:5173`).
