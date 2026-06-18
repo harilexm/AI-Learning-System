@@ -1,3 +1,11 @@
+## Project Motivation
+
+**The Problem**: Traditional learning platforms often lack personalized, hands-on environments and struggle to present complex concepts interactively.  
+**Our Solution**: We built a centralized, dynamic platform that integrates interactive quizzes and rich multimedia content, bridging the gap between theory and practice.  
+**The Impact**: This enables educators to easily track student progress while empowering students to learn at their own pace through a highly interactive UI.
+
+---
+
 # AI Learning System
 
 This repository contains a full-stack web application for an AI Learning System.  
@@ -6,12 +14,6 @@ This repository contains a full-stack web application for an AI Learning System.
 **Backend**: Python API built with Flask, SQLAlchemy, and PostgreSQL.
 
 The system is designed to serve AI-related learning content, models, or curriculum modules with an interactive user interface.
-
-## Project Motivation
-
-**The Problem**: Traditional learning platforms often lack personalized, hands-on environments and struggle to present complex concepts interactively.  
-**Our Solution**: We built a centralized, dynamic platform that integrates interactive quizzes and rich multimedia content, bridging the gap between theory and practice.  
-**The Impact**: This enables educators to easily track student progress while empowering students to learn at their own pace through a highly interactive UI.
 
 ---
 
